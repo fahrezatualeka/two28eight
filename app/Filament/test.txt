@@ -1,0 +1,238 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Product;
+use App\Models\Order;
+use App\Models\Province;
+use App\Models\City;
+use App\Models\OrderItem;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Carbon;
+
+class CheckoutController extends Controller
+{
+    
+
+    public function index()
+    {
+        //
+    }
+
+    public function uploadBukti(Request $request)
+    {
+        $request->validate([
+            'bukti_pembayaran' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'order_id' => 'required|exists:orders,id',
+        ]);
+
+        $file = $request->file('bukti_pembayaran');
+        $filename = uniqid('bukti_') . '.' . $file->getClientOriginalExtension();
+        $file->storeAs('bukti_pembayaran', $filename);
+
+        $order = Order::find($request->order_id);
+
+        if (!$order) {
+            return back()->with('error', 'Pesanan tidak ditemukan.');
+        }
+
+        $order->bukti_pembayaran = $filename;
+        $order->status = 'Menunggu Verifikasi';
+        $order->save();
+
+        return redirect()->route('home')->with('success', 'Bukti pembayaran berhasil dikirim kan. Status anda saat ini Menunggu verifikasi oleh admin. Selalu pantau status pengiriman anda di menu (Status Pesanan) menggunakan nomor pesanan anda');
+    }
+
+    
+
+    // public function multiple(Request $request)
+    // {
+    //     $selected = explode(',', $request->selected_products);
+    //     $cart = session()->get('cart', []);
+    //     $checkoutItems = [];
+    //     $subtotal = 0;
+
+    //     foreach ($selected as $id) {
+    //         if (isset($cart[$id])) {
+    //             $checkoutItems[$id] = $cart[$id];
+    //             $subtotal += $cart[$id]['price'] * $cart[$id]['quantity'];
+    //         }
+    //     }
+
+    //     $provinces = $this->getStaticProvinces();
+
+    //     return view('checkout', compact('checkoutItems', 'subtotal', 'provinces'));
+    // }
+
+    public function show(Request $request, $id)
+{
+    $product = Product::findOrFail($id);
+
+    $size = $request->get('size', 'S');
+    $qty = (int) $request->get('quantity', 1);
+
+    $checkoutItems = [
+        $id => [
+            'id' => $id,
+            'name' => $product->name,
+            'price' => $product->price,
+            'quantity' => $qty,
+            'size' => $size,
+            'image' => is_array($product->image) ? $product->image : json_decode($product->image, true),
+        ]
+    ];
+
+    $subtotal = $product->price * $qty;
+
+    $provinces = $this->getStaticProvinces(); // Sekarang method ini ada
+
+    return view('checkout', compact('checkoutItems', 'subtotal', 'provinces'));
+}
+
+    public function process(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $order = Order::create([
+                'order_number' => '28-' . strtoupper(uniqid()),
+                'nama' => $request->nama,
+                'alamat' => $request->alamat,
+                'kota' => $request->kota,
+                'provinsi' => $request->provinsi,
+                'kode_pos' => $request->kode_pos,
+                'telepon' => $request->telepon,
+                'metode_pengiriman' => $request->metode_pengiriman,
+                'status' => 'Menunggu Pembayaran',
+                'total_price' => 0,
+            ]);
+
+            $total = 0;
+            $checkoutProductIds = [];
+
+            foreach ($request->products as $productData) {
+                $dbProduct = Product::find($productData['id']);
+                if ($dbProduct) {
+                    $price = $dbProduct->price * $productData['quantity'];
+                    $total += $price;
+
+                    if ($dbProduct->sizes) {
+                        $sizes = is_string($dbProduct->sizes) ? json_decode($dbProduct->sizes, true) : $dbProduct->sizes;
+
+                        if (is_array($sizes)) {
+                            $updatedSizes = collect($sizes)->map(function ($sizeItem) use ($productData) {
+                                if ($sizeItem['size'] === $productData['size']) {
+                                    $sizeItem['stock'] -= $productData['quantity'];
+                                }
+                                return $sizeItem;
+                            });
+                            $dbProduct->sizes = json_encode($updatedSizes);
+                        }
+                    } else {
+                        $dbProduct->stock -= $productData['quantity'];
+                    }
+
+                    $dbProduct->save();
+
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $dbProduct->id,
+                        'name' => $dbProduct->name,
+                        'price' => $dbProduct->price,
+                        'size' => $productData['size'],
+                        'quantity' => $productData['quantity'],
+                        'image' => json_encode($dbProduct->image),
+                    ]);
+                    $checkoutProductIds[] = $dbProduct->id;
+                }
+            }
+
+            // Perbarui total price dengan ongkir dari form
+            $order->update([
+                'total_price' => $request->subtotal_price + $request->shipping_cost,
+                'shipping_cost' => $request->shipping_cost
+            ]);
+
+
+            $cart = session()->get('cart', []);
+            $newCart = collect($cart)->reject(function ($item) use ($checkoutProductIds) {
+                return in_array($item['id'], $checkoutProductIds);
+            })->toArray();
+            session()->put('cart', $newCart);
+
+            DB::commit();
+
+            return view('checkout-success', [
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+                'nama' => $order->nama,
+                'alamat' => $order->alamat,
+                'kota' => $order->kota,
+                'provinsi' => $order->provinsi,
+                'kode_pos' => $order->kode_pos,
+                'telepon' => $order->telepon,
+                'products' => $order->items,
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan saat memproses pesanan. Silakan coba lagi.');
+        }
+    }
+
+
+
+
+    private function getStaticProvinces()
+{
+    // Ambil semua provinsi dari tabel provinces
+    return Province::all(['id', 'name'])
+        ->map(function ($province) {
+            return [
+                'province_id' => $province->id,
+                'province'    => $province->name
+            ];
+        })->toArray();
+}
+
+
+public function getCities($provinceId)
+{
+    $cities = City::where('province_id', $provinceId)
+        ->get(['id', 'name'])
+        ->map(function ($city) {
+            return [
+                'city_id'   => $city->id,
+                'city_name' => $city->name,
+                'type'      => '' // Kalau mau tipe Kab/Kota bisa diisi di sini
+            ];
+        });
+
+    return response()->json($cities);
+}
+
+
+    public function checkOngkir(Request $request)
+    {
+        try {
+            $response = Http::withHeaders([
+                'key' => env('RAJAONGKIR_API_KEY')
+            ])->asForm()->post('https://rajaongkir.komerce.id/api/v1/calculate/district/domestic-cost', [
+                'origin'      => $request->origin,
+                'destination' => $request->destination,
+                'weight'      => $request->weight,
+                'courier'     => $request->courier
+            ])->json();
+    
+            return response()->json($response['data'] ?? []);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => $th->getMessage(),
+                'data'    => []
+            ]);
+        }
+    }
+}

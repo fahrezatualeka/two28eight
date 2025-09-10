@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binderbyte API Tester</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-lg">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Uji API Binderbyte</h1>
+        <p class="text-gray-600 mb-6 text-center">
+            Salin API key Anda dari file `.env` dan tempel di bawah ini untuk menguji apakah API berfungsi.
+        </p>
+
+        <div class="mb-4">
+            <label for="apiKey" class="block text-gray-700 font-semibold mb-2">API Key Binderbyte</label>
+            <input type="text" id="apiKey" placeholder="Tempel API key Anda di sini"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <button id="testButton"
+                class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 shadow-md">
+            Test API
+        </button>
+
+        <div id="resultContainer" class="mt-6 p-4 rounded-lg hidden">
+            <!-- Hasil API akan ditampilkan di sini -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const testButton = document.getElementById('testButton');
+            const apiKeyInput = document.getElementById('apiKey');
+            const resultContainer = document.getElementById('resultContainer');
+
+            testButton.addEventListener('click', async () => {
+                const apiKey = apiKeyInput.value.trim();
+                resultContainer.innerHTML = '';
+                
+                if (!apiKey) {
+                    displayResult('error', 'API key tidak boleh kosong!', 'Mohon masukkan API key Anda.');
+                    return;
+                }
+
+                displayResult('loading', 'Memuat...', 'Sedang mencoba memanggil API Binderbyte...');
+
+                try {
+                    const response = await fetch('https://api.binderbyte.com/v1/province', {
+                        method: 'GET',
+                        headers: {
+                            'X-Api-Key': apiKey
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.status && data.status === 200) {
+                            const provinces = data.value;
+                            if (provinces && provinces.length > 0) {
+                                displayResult('success', 'Sukses!', `Berhasil memuat ${provinces.length} provinsi.`);
+                                const list = document.createElement('ul');
+                                list.className = 'list-disc list-inside mt-2 text-sm';
+                                provinces.slice(0, 5).forEach(p => {
+                                    const item = document.createElement('li');
+                                    item.textContent = `${p.province} (ID: ${p.province_id})`;
+                                    list.appendChild(item);
+                                });
+                                resultContainer.appendChild(list);
+                                const seeMore = document.createElement('p');
+                                seeMore.className = 'text-xs text-gray-500 mt-2';
+                                seeMore.textContent = '... dan provinsi lainnya.';
+                                resultContainer.appendChild(seeMore);
+                            } else {
+                                displayResult('error', 'Respons API tidak valid.', 'Data provinsi kosong atau tidak ditemukan.');
+                            }
+                        } else {
+                           displayResult('error', 'Gagal', `Respons API: Status ${data.status || 'Tidak diketahui'}.`);
+                        }
+                    } else {
+                        const errorText = await response.text();
+                        displayResult('error', `Error Status ${response.status}`, `Respons: ${errorText.substring(0, 200)}...`);
+                    }
+
+                } catch (error) {
+                    displayResult('error', 'Terjadi Kesalahan Jaringan', error.message);
+                    console.error(error);
+                }
+            });
+
+            function displayResult(type, title, message) {
+                resultContainer.classList.remove('hidden');
+                resultContainer.classList.remove('bg-gray-200', 'bg-green-100', 'bg-red-100');
+                resultContainer.innerHTML = '';
+
+                let bgColor, titleColor, bodyColor;
+
+                switch (type) {
+                    case 'loading':
+                        bgColor = 'bg-gray-200';
+                        titleColor = 'text-gray-800';
+                        bodyColor = 'text-gray-600';
+                        break;
+                    case 'success':
+                        bgColor = 'bg-green-100';
+                        titleColor = 'text-green-800';
+                        bodyColor = 'text-green-600';
+                        break;
+                    case 'error':
+                        bgColor = 'bg-red-100';
+                        titleColor = 'text-red-800';
+                        bodyColor = 'text-red-600';
+                        break;
+                }
+
+                resultContainer.classList.add(bgColor);
+                resultContainer.innerHTML = `
+                    <p class="font-bold ${titleColor} text-lg mb-1">${title}</p>
+                    <p class="text-sm ${bodyColor}">${message}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

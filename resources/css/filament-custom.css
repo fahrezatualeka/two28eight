@@ -1,0 +1,26 @@
+/* ✅ Wrapper kolom gambar supaya horizontal scroll */
+.product-image-wrapper {
+    display: flex;
+    gap: 4px;
+    max-width: 150px;     /* ✅ batasi lebar kolom */
+    overflow-x: auto;
+    padding: 3px;
+}
+
+/* ✅ Kotak tiap gambar */
+.product-image-wrapper .thumb {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* ✅ Gambar kecil rapi */
+.product-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}

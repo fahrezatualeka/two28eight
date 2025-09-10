@@ -1,0 +1,445 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="bg-white min-h-screen px-6 py-10">
+    <div class="container mx-auto px-6 py-10 bg-white">
+        <br><br>
+
+        <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+
+            {{-- ✅ Kiri: Form Pengiriman --}}
+            <div class="space-y-4 col-span-2"> 
+                <h2 class="text-3xl font-bold mb-6">Checkout Produk</h2>
+                <form action="{{ route('checkout.process') }}" method="POST" class="space-y-4 h-full">
+                    @csrf
+                    {{-- ✅ Kirim semua produk yang di-checkout --}}
+                    @foreach($checkoutItems as $id => $item)
+                        <input type="hidden" name="products[{{ $id }}][id]" value="{{ $id }}">
+                        <input type="hidden" name="products[{{ $id }}][quantity]" value="{{ $item['quantity'] }}">
+                        <input type="hidden" name="products[{{ $id }}][size]" value="{{ $item['size'] }}">
+                    @endforeach
+
+                    {{-- ✅ Form Alamat --}}
+                    <div>
+                        <label class="block font-semibold mb-1">Nama Lengkap</label>
+                        <input type="text" name="nama" class="w-full border rounded-lg px-4 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Alamat</label>
+                        <textarea name="alamat" rows="3" class="w-full border rounded-lg px-4 py-2" required></textarea>
+                    </div>
+
+                    {{-- ✅ Kota & Provinsi --}}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-semibold mb-1">Kota/Kabupaten</label>
+                            <input type="text" name="kota" class="w-full border rounded-lg px-4 py-2" required>
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Provinsi</label>
+                            <input type="text" name="provinsi" class="w-full border rounded-lg px-4 py-2" required>
+                        </div>
+                    </div>
+
+                    {{-- ✅ Kode Pos & Telepon --}}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-semibold mb-1">Kode Pos</label>
+                            <input type="number" name="kode_pos" class="w-full border rounded-lg px-4 py-2" required>
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Telepon</label>
+                            <input type="number" name="telepon" class="w-full border rounded-lg px-4 py-2" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold mb-1">Metode Pengiriman</label>
+                        <select name="metode_pengiriman" class="w-full border rounded-lg px-4 py-2">
+                            <option>- Pilih -</option>
+                            <option>JNE</option>
+                            <option>JNT</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold mb-1">Pembayaran</label>
+                        <p>Nama Pemilik Rekening: </p>
+                        <p>No Rekening: </p>
+                        <p>Nama Bank: </p>
+                    </div>
+
+                    {{-- <button type="submit" class="bg-green-600 text-white py-3 w-full rounded-lg font-semibold hover:bg-green-700"> --}}
+                    <button type="submit" class="bg-black text-white py-3 w-full rounded-lg font-semibold group">
+                        Selesaikan Pesanan
+                    </button>
+                </form>
+            </div>
+
+            {{-- ✅ Kanan: Daftar Produk --}}
+{{-- ✅ Kanan: Daftar Produk --}}
+@php 
+    $subtotal = 0;
+    $ongkir = 46000;
+@endphp
+
+<div class="border rounded-lg p-5 bg-gray-50 shadow-md w-full max-w-md h-full flex flex-col justify-between self-start">
+
+    {{-- ✅ Bagian Atas: Semua Produk --}}
+    <div class="w-full">
+        <h2 class="text-xl font-bold mb-4">Produk Anda</h2>
+
+        @foreach($checkoutItems as $id => $item)
+            @php 
+                $subtotal += $item['price'] * $item['quantity'];
+                $images = is_array($item['image']) ? $item['image'] : json_decode($item['image'], true);
+            @endphp
+
+            <div class="flex items-start gap-4 mb-4">
+                <div class="relative">
+                    <img src="{{ $images ? Storage::url($images[0]) : asset('no-image.png') }}" 
+                         class="w-20 h-28 object-cover rounded-md border">
+                    <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
+                        {{ $item['quantity'] }}
+                    </span>
+                </div>
+
+                <div class="flex-1">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold">{{ $item['name'] }}</h3>
+                        <p class="font-semibold text-base">
+                            Rp{{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}
+                        </p>
+                    </div>
+                    <p class="text-gray-500 text-sm">Ukuran {{ $item['size'] }}</p>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    {{-- ✅ Bagian Bawah: Harga Total --}}
+    @php $grandTotal = $subtotal + $ongkir; @endphp
+    <div class="mt-4 w-full">
+        <hr class="my-3">
+        <p class="text-gray-700">Subtotal: <strong>Rp{{ number_format($subtotal, 0, ',', '.') }}</strong></p>
+        <p class="text-gray-700">Pengiriman: <strong>Rp{{ number_format($ongkir, 0, ',', '.') }}</strong></p>
+        <p class="font-bold mt-1">Total: <strong>Rp{{ number_format($grandTotal, 0, ',', '.') }}</strong></p>
+    </div>
+
+</div>
+        </div>
+    </div>
+</div>
+@endsection
+
+
+
+
+
+
+
+
+
+otomatis provinsi
+@extends('layouts.app')
+
+@section('content')
+<div class="bg-white min-h-screen px-6 py-10">
+    <div class="container mx-auto px-6 py-10 bg-white">
+        <br><br>
+
+        <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+
+            {{-- ✅ Kiri: Form Pengiriman --}}
+            <div class="space-y-4 col-span-2"> 
+                <h2 class="text-3xl font-bold mb-6">Checkout Produk</h2>
+                <form action="{{ route('checkout.process') }}" method="POST" class="space-y-4 h-full">
+                    @csrf
+                    {{-- ✅ Kirim semua produk yang di-checkout --}}
+                    @foreach($checkoutItems as $id => $item)
+                        <input type="hidden" name="products[{{ $id }}][id]" value="{{ $id }}">
+                        <input type="hidden" name="products[{{ $id }}][quantity]" value="{{ $item['quantity'] }}">
+                        <input type="hidden" name="products[{{ $id }}][size]" value="{{ $item['size'] }}">
+                    @endforeach
+
+                    {{-- ✅ Form Alamat --}}
+                    <div>
+                        <label class="block font-semibold mb-1">Nama Lengkap</label>
+                        <input type="text" name="nama" class="w-full border rounded-lg px-4 py-2" required>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold mb-1">Telepon</label>
+                        <input type="number" name="telepon" class="w-full border rounded-lg px-4 py-2" required>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold mb-1">Alamat</label>
+                        <textarea name="alamat" rows="3" class="w-full border rounded-lg px-4 py-2" required></textarea>
+                    </div>
+
+                    {{-- ✅ Kota & Provinsi --}}
+{{-- ✅ Kota & Provinsi --}}
+<div class="grid grid-cols-2 gap-4">
+    <div>
+        <label class="block font-semibold mb-1">Kota/Kabupaten</label>
+        <input type="text" name="kota" id="kota" class="w-full border rounded-lg px-4 py-2" required>
+    </div>
+    <div>
+        <label class="block font-semibold mb-1">Provinsi</label>
+        <select name="provinsi" id="provinsi" class="w-full border rounded-lg px-4 py-2" required>
+            <option value="">- Pilih -</option>
+        </select>
+    </div>
+
+    
+</div>
+
+{{-- ✅ Kecamatan --}}
+<div class="grid grid-cols-2 gap-4">
+
+                        <div>
+                            <label class="block font-semibold mb-1">Kode Pos</label>
+                            <input type="number" name="kode_pos" class="w-full border rounded-lg px-4 py-2" required>
+                        </div>
+                        
+                        
+                        
+                        <div>
+                            <label class="block font-semibold mb-1">Metode Pengiriman</label>
+                            <select name="metode_pengiriman" class="w-full border rounded-lg px-4 py-2">
+                                <option value ="">- Pilih -</option>
+                                <option value ="jne">JNE</option>
+                                <option value ="jnt">JNT</option>
+                                <option value ="lionparcel">Lion Parcel</option>
+                                <option value ="sicepat">Si Cepat</option>
+                                <option value ="anteraja">Anteraja</option>
+                                <option value ="anteraja">SiCepat</option>
+                                <option value ="gosend">GoSend</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold mb-1">Pembayaran</label>
+                        <p>Nama Pemilik Rekening: </p>
+                        <p>No Rekening: </p>
+                        <p>Nama Bank: </p>
+                    </div>
+
+                    {{-- <button type="submit" class="bg-green-600 text-white py-3 w-full rounded-lg font-semibold hover:bg-green-700"> --}}
+                    <button type="submit" class="bg-black text-white py-3 w-full rounded-lg font-semibold group">
+                        Selesaikan Pesanan
+                    </button>
+                </form>
+            </div>
+
+            {{-- ✅ Kanan: Daftar Produk --}}
+{{-- ✅ Kanan: Daftar Produk --}}
+@php 
+    $subtotal = 0;
+    $ongkir = 46000;
+@endphp
+
+<div class="border rounded-lg p-5 bg-gray-50 shadow-md w-full max-w-md h-full flex flex-col justify-between self-start">
+
+    {{-- ✅ Bagian Atas: Semua Produk --}}
+    <div class="w-full">
+        <h2 class="text-xl font-bold mb-4">Produk Anda</h2>
+
+        @foreach($checkoutItems as $id => $item)
+            @php 
+                $subtotal += $item['price'] * $item['quantity'];
+                $images = is_array($item['image']) ? $item['image'] : json_decode($item['image'], true);
+            @endphp
+
+            <div class="flex items-start gap-4 mb-4">
+                <div class="relative">
+                    <img src="{{ $images ? Storage::url($images[0]) : asset('no-image.png') }}" 
+                         class="w-20 h-28 object-cover rounded-md border">
+                    <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
+                        {{ $item['quantity'] }}
+                    </span>
+                </div>
+
+                <div class="flex-1">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold">{{ $item['name'] }}</h3>
+                        <p class="font-semibold text-base">
+                            Rp{{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}
+                        </p>
+                    </div>
+                    <p class="text-gray-500 text-sm">Ukuran {{ $item['size'] }}</p>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    {{-- ✅ Bagian Bawah: Harga Total --}}
+    @php $grandTotal = $subtotal + $ongkir; @endphp
+    <div class="mt-4 w-full">
+        <hr class="my-3">
+        <p class="text-gray-700">Subtotal: <strong>Rp{{ number_format($subtotal, 0, ',', '.') }}</strong></p>
+        <p class="mt-3">Pengiriman: <strong id="ongkir-text">Rp0</strong></p>
+<input type="hidden" name="ongkir" id="ongkir-value">
+        <p class="font-bold mt-1">Total: <strong>Rp{{ number_format($grandTotal, 0, ',', '.') }}</strong></p>
+    </div>
+
+</div>
+        </div>
+    </div>
+</div>
+@endsection
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+<script>
+    $(document).ready(function(){
+    
+        // ✅ Load daftar provinsi
+        $.get("/komerce/provinces", function(res){
+            if(res.data && Array.isArray(res.data)){
+                res.data.forEach(function(p){
+                    $('#provinsi').append(`<option value="${p.id}">${p.name}</option>`);
+                });
+            }
+        });
+    
+        // ✅ Hitung Ongkir jika kurir atau provinsi berubah
+        $('select[name="metode_pengiriman"], #provinsi, input[name="kode_pos"]').on('change keyup', function(){
+    let courier = $('select[name="metode_pengiriman"]').val();
+    let provinsi = $('#provinsi').val();
+
+    if(courier && provinsi){
+        $.ajax({
+            url: "/komerce/cost",
+            type: "POST",
+            data: {
+                _token: "{{ csrf_token() }}",
+                destination: provinsi,
+                courier: courier,
+                weight: 1000
+            },
+            success: function(res){
+                if(res.success){
+                    $('#ongkir-text').text("Rp" + res.ongkir.toLocaleString());
+                    $('#ongkir-value').val(res.ongkir);
+                } else {
+                    $('#ongkir-text').text("Rp0");
+                    alert("Tidak ada tarif pengiriman!");
+                }
+            },
+            error: function(xhr){
+                console.error("ERROR ONGKIR:", xhr.responseText);
+                alert("Gagal menghitung ongkir!");
+            }
+        });
+    }
+});
+    
+    });
+    </script>
+
+
+
+
+
+
+    <div class="bg-white min-h-screen px-6 py-10" wire:poll.5s>
+    <div class="container mx-auto px-6 py-10 bg-white">
+        <br>
+        <br>
+        <h2 class="text-3xl font-bold mb-6">Lacak Pesanan</h2>
+        
+
+        {{-- Form pencarian --}}
+        <form wire:submit.prevent="search" class="mb-6">
+            <div class="flex gap-4 items-center">
+                <input type="text" wire:model.defer="orderNumber" placeholder="Masukkan Nomor Pesanan"
+                    class="w-full border border-gray-300 px-4 py-2 rounded-lg" required>
+                <button type="submit" class="bg-black text-white px-6 py-2 rounded hover:bg-gray-800">
+                    Lacak
+                </button>
+            </div>
+        </form>
+
+        {{-- Hasil pencarian --}}
+        @if ($order)
+        <br>
+            <h3 class="text-xl font-bold text-red-500 mb-4">Status Pengiriman: {{ $order->status }}</h3>
+<br>
+            {{-- Detail pengiriman --}}
+            <div class="border-t pt-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="col-span-1 space-y-3">
+                    <h3 class="text-xl font-bold">Detail Pengiriman</h3>
+                    <ul class="text-sm space-y-2">
+                        <li>Nama: {{ $order->nama }}</li>
+                        <li>Alamat: {{ $order->alamat }}, {{ $order->kota }}, {{ $order->provinsi }} {{ $order->kode_pos }}</li>
+                        <li>Telepon: {{ $order->telepon }}</li>
+                        <li>Metode: {{ $order->metode_pengiriman }}</li>
+                        <li>Resi: {{ $order->no_resi ?? 'Belum dikirim' }}</li>
+                    </ul>
+                </div>
+
+                <div class="col-span-2 space-y-4">
+                    <h3 class="text-xl font-bold ">Produk yang Dipesan</h3>
+
+                    @php $subtotal = 0; @endphp
+                    <div class="border rounded-lg p-5 bg-gray-50 shadow-md w-full h-full flex flex-col justify-between self-start">
+
+                        {{-- ✅ Bagian Atas: Semua Produk --}}
+                        <div class="w-full">
+                    @foreach($order->items as $item)
+                        @php
+                            $images = is_array($item->image) ? $item->image : json_decode($item->image, true);
+                            $image = $images[0] ?? 'no-image.png';
+                            $itemSubtotal = $item->price * $item->quantity;
+                            $subtotal += $itemSubtotal;
+                        @endphp
+
+                        <div class="flex gap-4 mb-4">
+                            <div class="relative">
+                                <img src="{{ asset('storage/' . $image) }}" 
+                                     class="min-w-[75px] max-w-[75px] object-cover rounded-md border">
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center">
+                                    <h3 class="text-lg ">{{ $item->name }}</h3>
+                                    <p class="text-base">
+                                        Rp{{ number_format($itemSubtotal, 0, ',', '.') }}
+                                    </p>
+                                </div>
+                                <p class="text-gray-500 text-sm">Ukuran {{ $item->size }}</p>
+                                <p class="text-gray-500 text-sm">Jumlah {{ $item->quantity }}</p>
+                            </div>
+                        </div>
+                    @endforeach
+                        </div>
+
+                {{-- ✅ Bagian Bawah: Harga Total --}}
+                <div class="mt-4 w-full">
+                    <hr class="my-3">
+                    <p class="text-gray-700">Subtotal: Rp{{ number_format($subtotal, 0, ',', '.') }}</p>
+                    <p class="text-gray-700">Ongkir: Rp{{ number_format($ongkir, 0, ',', '.') }}</p>
+                    <p class=" mt-1">Total: Rp{{ number_format($subtotal + $ongkir, 0, ',', '.') }}</p>
+                </div>
+                
+            </div>
+            </div>
+            </div>
+        @elseif ($orderNumber)
+            <div class="mt-6 p-4 bg-red-100 text-red-700 rounded shadow">
+                Nomor pesanan tidak ditemukan.
+            </div>
+        @endif
+    </div>
+</div>
+
+
+
+
+
+
+
