@@ -105,14 +105,14 @@
             <div class="qr-code-box mt-4">
                 <div class="flex justify-center">
                     <!-- URL untuk QR Code Generator. Ganti nomor telepon Anda di sini. -->
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?data=https://wa.me/6282239286792&size=150x150" alt="WhatsApp QR Code" class="w-full h-auto max-w-[150px]">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?data=https://wa.me/6282225048894&size=150x150" alt="WhatsApp QR Code" class="w-full h-auto max-w-[150px]">
                 </div>
                 <p class="text-center text-sm text-gray-500 mt-2">Scan the code</p>
             </div>
             <!-- Tombol Buka WhatsApp -->
-            <a href="https://wa.me/6282239286792" target="blank"
+            <a href="https://wa.me/6282225048894" target="blank"
                class="mt-4 w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-colors">
-                <span>Buka Whatsapp</span>
+                <span>Kirim pertanyaan</span>
                 <i class="fa-brands fa-whatsapp"></i>
             </a>
         </div>

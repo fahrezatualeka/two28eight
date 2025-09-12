@@ -3,7 +3,6 @@
 
         <h2 class="text-3xl font-bold mb-8">Status Pesanan</h2>
 
-        {{-- Form pencarian --}}
         <form wire:submit.prevent="search" class="mb-6">
             <div class="flex gap-4 items-center">
                 <input type="text" wire:model.defer="orderNumber" placeholder="Masukkan nomor pesanan anda"
@@ -12,11 +11,11 @@
             </div>
         </form>
 
+        {{-- 🟢 KOREKSI UTAMA: Satu blok IF/ELSEIF/ELSE untuk semua kondisi --}}
         @if ($order)
-            {{-- ✅ KODE UTAMA: Memeriksa status token yang baru --}}
-            @if ($order->status === 'dibatalkan')
+            @if ($order->status === 'Ditolak')
                 <div class="mt-6 p-4 bg-red-100 text-red-700 rounded shadow">
-                    Pembayaran produk anda ditolak dikarenakan mengirimkan bukti pembayaran lain, dan otomatis produk anda dihapus dari pemesanan.
+                    Nomor pesanan {{ $order->order_number }} telah ditolak karena bukti pembayaran tidak sesuai.
                 </div>
             @else
                 <div wire:poll.7s>
@@ -25,10 +24,10 @@
                         <span wire:loading class="text-sm text-gray-500">(Memperbarui...)</span>
                     </h3>
         
-                    {{-- Detail & Produk (selalu tampil) --}}
                     <div class="border-t pt-4 grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div>
                             <h3 class="text-xl font-bold">Detail Pengiriman</h3>
+                            <br>
                             <ul class="text-sm space-y-2">
                                 <li>Nama Pembeli: {{ $order->nama }}</li>
                                 <li>Alamat: {{ $order->alamat }}, {{ $order->kota }}, {{ $order->provinsi }} {{ $order->kode_pos }}</li>
@@ -37,7 +36,7 @@
                                 <li>Nomor Resi: {{ $order->no_resi ?? 'Belum dikirim' }}</li>
                             </ul>
                         </div>
-        
+    
                         <div class="col-span-2 space-y-4">
                             <h3 class="text-xl font-bold ">Produk yang Dipesan</h3>
                         
@@ -46,47 +45,44 @@
                                 $ongkir = 0;
                             @endphp
                         
-                        <div class="border rounded-lg p-5 bg-gray-50 shadow-md w-full h-full flex flex-col justify-between self-start">
+                            <div class="border rounded-lg p-5 bg-gray-50 shadow-md w-full h-full flex flex-col justify-between self-start">
             
-                            <div class="w-full">
-                        
-                                @foreach($order->items as $item)
-                                    @php 
-                                        $images = is_array($item->image) ? $item->image : json_decode($item->image, true);
-                                        $image = $images[0] ?? 'no-image.png';
-                                        $itemSubtotal = $item->price * $item->quantity;
-                                        $subtotal += $itemSubtotal;
-                                    @endphp
-                        
-                                    <div class="flex items-start gap-4 mb-4">
-                                        <div class="relative">
-                                            <img src="{{ asset('storage/' . $image) }}" 
-                                                 class="min-w-[75px] max-w-[75px] object-cover rounded-md border">
-                                        </div>
-                        
-                                        <div class="flex-1">
-                                            <div class="flex justify-between items-center">
-                                                <h3 class="text-lg ">{{ $item->name }}</h3>
-                                                <p class="text-base">
-                                                    Rp{{ number_format($itemSubtotal, 0, ',', '.') }}
-                                                </p>
+                                <div class="w-full">
+                                    @foreach($order->items as $item)
+                                        @php 
+                                            $images = is_array($item->image) ? $item->image : json_decode($item->image, true);
+                                            $image = $images[0] ?? 'no-image.png';
+                                            $itemSubtotal = $item->price * $item->quantity;
+                                            $subtotal += $itemSubtotal;
+                                        @endphp
+                                        <div class="flex items-start gap-4 mb-4">
+                                            <div class="relative inline-block">
+                                                <div class="w-[75px] aspect-square border rounded-md overflow-hidden">
+                                                    <img src="{{ $images ? Storage::url($images[0]) : asset('no-image.png') }}" 
+                                                        class="w-full h-full object-cover">
+                                                </div>
+                                                <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
+                                                    {{ $item['quantity'] }}
+                                                </span>
                                             </div>
-                                            <p class="text-gray-500 text-sm">Ukuran {{ $item->size }}</p>
-                                            <p class="text-gray-500 text-sm">Jumlah {{ $item->quantity }}</p>
+                                            <div class="flex-1">
+                                                <div class="flex justify-between items-center">
+                                                    <h3 class="text-lg "><strong>Twoeight - {{ $item->name }}</strong></h3>
+                                                </div>
+                                                <h3 class="text-gray-500">Ukuran {{ $item->size }}</h3>
+                                            </div>
                                         </div>
-                                    </div>
-                                @endforeach
+                                    @endforeach
+                                </div>
+                            
+                                <div class="mt-4 w-full">
+                                    <hr class="my-3">
+                                    <p class="text-gray-700">Subtotal: Rp{{ number_format($subtotal, 0, ',', '.') }}</p>
+                                    <p class="text-gray-700">Ongkos Kirim: Rp{{ number_format($ongkir, 0, ',', '.') }}</p>
+                                    <p class=" mt-1">Total: Rp{{ number_format($subtotal + $ongkir, 0, ',', '.') }}</p>
+                                </div>
                             </div>
-                        
-                            <div class="mt-4 w-full">
-                                <hr class="my-3">
-                                <p class="text-gray-700">Subtotal: Rp{{ number_format($subtotal, 0, ',', '.') }}</p>
-                                <p class="text-gray-700">Ongkir: Rp{{ number_format($ongkir, 0, ',', '.') }}</p>
-                                <p class=" mt-1">Total: Rp{{ number_format($subtotal + $ongkir, 0, ',', '.') }}</p>
-                            </div>
-                        
-                                    </div>
-                                    </div>
+                        </div>
                     </div>
                     <br>
                     <br>
@@ -100,8 +96,10 @@
                             @endif
         
                             <h3 class="font-semibold text-lg mb-3">Konfirmasi Pembayaran</h3>
-                            <p>Silakan transfer ke rekening berikut: <strong>Bank BCA</strong> a.n Fadil Muliatra Trimanda</p>
-                            <p>No Rekening: <strong>1390167357</strong></p>
+                            <p>Silakan transfer ke rekening berikut: <strong></strong></p>
+                            <strong>Bank BCA</strong>
+                            <p>Nama Rekening: <strong>Baharudin Belakolly</strong></p>
+                            <p>Nomor Rekening: <strong>8320857571</strong></p>
                             <p>Total Pembayaran: <strong>Rp{{ number_format($subtotal, 0, ',', '.') }}</strong></p>
                             <p class="text-red-500 mt-2">⚠️ Harap melakukan pembayaran dalam 24 jam dan upload bukti pembayaran di bawah ini.</p>
         

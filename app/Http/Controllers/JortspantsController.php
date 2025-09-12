@@ -5,16 +5,18 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 
-class AksesorisController extends Controller
+class JortspantsController extends Controller
 {
     public function index(Request $request)
     {
-        // Mulai query dengan memfilter langsung berdasarkan kolom 'category' dengan nilai 'aksesoris'
-        $query = Product::where('category', 'aksesoris');
+        // Mulai query dengan memfilter langsung berdasarkan kolom 'category' dengan nilai 'jortspants'
+        $query = Product::where('category', 'jortspants');
 
-        // Ambil nilai filter harga dari request
+        // Ambil nilai filter dari request
         $minPrice = $request->input('min_price');
         $maxPrice = $request->input('max_price');
+        $size = $request->input('size');
+        $sort = $request->input('sort', 'latest'); // Default: terbaru
 
         // Terapkan filter harga jika ada nilainya
         if ($minPrice) {
@@ -25,9 +27,13 @@ class AksesorisController extends Controller
             $query->where('price', '<=', $maxPrice);
         }
 
-        // ✅ Logika baru untuk mengurutkan produk
-        $sort = $request->input('sort', 'latest'); // Default: terbaru
-
+        // ✅ PERBAIKAN: Terapkan filter ukuran jika ada nilainya
+        if ($size) {
+            // Kita harus mencari nilai 'size' di dalam setiap objek dari array JSON
+            $query->whereJsonContains('sizes->[*]->size', $size);
+        }
+        
+        // ✅ Logika untuk mengurutkan produk
         switch ($sort) {
             case 'price_asc':
                 $query->orderBy('price', 'asc');
@@ -45,7 +51,7 @@ class AksesorisController extends Controller
         $products = $query->paginate(12);
 
         // Kirim produk ke view
-        return view('produk.aksesoris', [
+        return view('produk.jortspants', [
             'products' => $products,
         ]);
     }

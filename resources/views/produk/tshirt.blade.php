@@ -4,7 +4,7 @@
 <div class="bg-white min-h-screen px-6 py-10">
     <div class="container mx-auto pt-32 pb-10 bg-white">
 
-        <h2 class="text-3xl font-bold mb-8">two28eight - Tas</h2>
+        <h2 class="text-3xl font-bold mb-8">Twoeight - T shirt</h2>
 
         {{-- ✅ Grid 2 kolom: Filter (kiri) dan Produk (kanan) --}}
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -14,9 +14,9 @@
                 <h3 class="text-lg font-semibold mb-4">Filter Harga</h3>
 
                 {{-- 🔥 Form Filter Harga dan Sort. Action ke rute yang sama --}}
-                <form id="filterFormTopi" action="{{ route('produk.tas') }}" method="GET">
-                    {{-- Input tersembunyi untuk kategori tas, ini memastikan filter harga tetap di kategori yang benar --}}
-                    <input type="hidden" name="category" value="tas">
+                <form id="filterFormTshirt" action="{{ route('produk.tshirt') }}" method="GET">
+                    {{-- Input tersembunyi untuk kategori tshirt, ini memastikan filter harga tetap di kategori yang benar --}}
+                    <input type="hidden" name="category" value="tshirt">
 
                     {{-- 🔥 Filter Harga Minimum --}}
                     <div class="mb-4">
@@ -42,7 +42,7 @@
                 
                 {{-- ✅ Dropdown untuk Opsi Pengurutan --}}
                 <div class="flex justify-end mb-4">
-                    <form id="sortFormTopi" action="{{ route('produk.tas') }}" method="GET">
+                    <form id="sortFormTshirt" action="{{ route('produk.tshirt') }}" method="GET">
                         {{-- Mempertahankan nilai filter harga saat sort diubah --}}
                         @if(request('min_price'))
                             <input type="hidden" name="min_price" value="{{ request('min_price') }}">
@@ -66,7 +66,7 @@
                     @forelse($products as $product)
                         @include('components.product-card', ['product' => $product])
                     @empty
-                        <p class="col-span-full text-center text-gray-500">Tidak ada produk tas yang ditemukan.</p>
+                        <p class="col-span-full text-center text-gray-500">Tidak ada produk t-shirt yang ditemukan.</p>
                     @endforelse
                 </div>
 
@@ -81,9 +81,9 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const filterForm = document.getElementById('filterFormTopi');
-        const sortForm = document.getElementById('sortFormTopi');
-        const filterInputs = document.querySelectorAll('#filterFormTopi .filter-input');
+        const filterForm = document.getElementById('filterFormTshirt');
+        const sortForm = document.getElementById('sortFormTshirt');
+        const filterInputs = document.querySelectorAll('#filterFormTshirt .filter-input');
         const sortSelect = document.getElementById('sort');
 
         // Submit form filter harga setelah user selesai mengetik (debounce)

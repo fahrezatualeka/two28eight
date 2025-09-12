@@ -10,8 +10,9 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'order_number','user_id','nama','alamat','kecamatan','kota','provinsi',
-        'kode_pos','telepon','metode_pengiriman','total_price','status', 'no_resi', 'bukti_pembayaran'
+        'order_number', 'user_id', 'nama', 'alamat', 'kecamatan', 'kota', 'provinsi',
+        'kode_pos', 'telepon', 'metode_pengiriman', 'total_price', 'status', 
+        'no_resi', 'bukti_pembayaran', 'receipt_image' // Pastikan ini ada
     ];
 
     public function items()

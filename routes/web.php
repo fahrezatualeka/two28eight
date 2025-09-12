@@ -9,16 +9,37 @@ use App\Http\Controllers\LacakPesananController;
 use App\Http\Livewire\LacakPesanan;
 
 // produk
-use App\Http\Controllers\TopiController;
-use App\Http\Controllers\KaosController;
-use App\Http\Controllers\KemejaController;
-use App\Http\Controllers\JaketController;
-use App\Http\Controllers\HoodieController;
-use App\Http\Controllers\TasController;
-use App\Http\Controllers\CelanaController;
-use App\Http\Controllers\AksesorisController;
+use App\Http\Controllers\TshirtController;
+use App\Http\Controllers\PoloShirtController;
+use App\Http\Controllers\JerseyController;
+use App\Http\Controllers\ZipperHoodieController;
+use App\Http\Controllers\JortspantsController;
+use App\Http\Controllers\SweatpantsController;
+use App\Http\Controllers\TruckerController;
+use App\Http\Controllers\AccessoriesController;
+use App\Models\Order;
+use Spatie\Browsershot\Browsershot;
 
+Route::get('/test-receipt/{orderId}', function ($orderId) {
+    try {
+        $order = Order::findOrFail($orderId);
+        $receiptHtml = view('receipt', ['order' => $order])->render();
+        $fileName = 'receipts/test-' . $order->order_number . '.png';
 
+        Browsershot::html($receiptHtml)
+            ->setNodeBinary('/usr/local/bin/node')
+            ->setNpmBinary('/usr/local/bin/npm')
+            ->setChromePath('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
+            ->noSandbox()
+            ->waitUntilNetworkIdle()
+            ->save(storage_path('app/public/' . $fileName));
+
+        return "Resi berhasil dibuat di " . $fileName;
+
+    } catch (\Exception $e) {
+        return "Terjadi kesalahan: " . $e->getMessage();
+    }
+});
 
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
@@ -91,14 +112,14 @@ Route::get('/test-api', function () {
 });
 
 // produk
-Route::get('/topi', [TopiController::class, 'index'])->name('produk.topi');
-Route::get('/kaos', [KaosController::class, 'index'])->name('produk.kaos');
-Route::get('/kemeja', [KemejaController::class, 'index'])->name('produk.kemeja');
-Route::get('/jaket', [JaketController::class, 'index'])->name('produk.jaket');
-Route::get('/hoodie', [HoodieController::class, 'index'])->name('produk.hoodie');
-Route::get('/tas', [TasController::class, 'index'])->name('produk.tas');
-Route::get('/celana', [CelanaController::class, 'index'])->name('produk.celana');
-Route::get('/aksesoris', [AksesorisController::class, 'index'])->name('produk.aksesoris');
+Route::get('/tshirt', [TshirtController::class, 'index'])->name('produk.tshirt');
+Route::get('/poloshirt', [PoloShirtController::class, 'index'])->name('produk.poloshirt');
+Route::get('/jersey', [JerseyController::class, 'index'])->name('produk.jersey');
+Route::get('/zipperhoodie', [ZipperHoodieController::class, 'index'])->name('produk.zipperhoodie');
+Route::get('/jortspants', [JortspantsController::class, 'index'])->name('produk.jortspants');
+Route::get('/sweatpants', [SweatpantsController::class, 'index'])->name('produk.sweatpants');
+Route::get('/trucker', [TruckerController::class, 'index'])->name('produk.trucker');
+Route::get('/accessories', [AccessoriesController::class, 'index'])->name('produk.accessories');
 
 
 // Tambahkan rute ini ke file web.php Anda

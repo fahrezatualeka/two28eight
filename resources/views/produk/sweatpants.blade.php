@@ -4,44 +4,33 @@
 <div class="bg-white min-h-screen px-6 py-10">
     <div class="container mx-auto pt-32 pb-10 bg-white">
 
-        <h2 class="text-3xl font-bold mb-8">two28eight - Celana</h2>
+        <h2 class="text-3xl font-bold mb-8">Twoeight - Sweat Pants</h2>
 
         {{-- ✅ Grid 2 kolom: Filter (kiri) dan Produk (kanan) --}}
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
             
-            {{-- ✅ Kolom Filter --}}
+            {{-- ✅ Kolom Filter Harga --}}
             <aside class="bg-gray-50 p-5 rounded-lg border h-fit">
-                <h3 class="text-lg font-semibold mb-4">Filter Produk</h3>
+                <h3 class="text-lg font-semibold mb-4">Filter Harga</h3>
 
-                {{-- 🔥 Form Filter --}}
-                <form id="filterFormKaos" action="{{ route('produk.celana') }}" method="GET">
-                    {{-- Input tersembunyi untuk kategori celana --}}
-                    <input type="hidden" name="category" value="celana">
+                {{-- 🔥 Form Filter Harga dan Sort. Action ke rute yang sama --}}
+                <form id="filterFormTopi" action="{{ route('produk.sweatpants') }}" method="GET">
+                    {{-- Input tersembunyi untuk kategori sweatpants, ini memastikan filter harga tetap di kategori yang benar --}}
+                    <input type="hidden" name="category" value="sweatpants">
 
-                    {{-- 🔥 Filter Harga --}}
+                    {{-- 🔥 Filter Harga Minimum --}}
                     <div class="mb-4">
                         <label for="min_price" class="block font-medium mb-2">Harga Minimum</label>
                         <input type="number" name="min_price" id="min_price" placeholder="Min" value="{{ request('min_price') }}" class="w-full border p-2 rounded filter-input">
                     </div>
+                
+                    {{-- 🔥 Filter Harga Maksimum --}}
                     <div class="mb-4">
                         <label for="max_price" class="block font-medium mb-2">Harga Maksimum</label>
                         <input type="number" name="max_price" id="max_price" placeholder="Max" value="{{ request('max_price') }}" class="w-full border p-2 rounded filter-input">
                     </div>
-                
-                    {{-- ✅ Filter Ukuran --}}
-                    <div class="mb-4">
-                        <label for="size" class="block font-medium mb-2">Ukuran</label>
-                        <select name="size" id="size" class="w-full border rounded p-2 filter-input">
-                            <option value="">- Pilih -</option>
-                            <option value="S" {{ request('size') == 'S' ? 'selected' : '' }}>S</option>
-                            <option value="M" {{ request('size') == 'M' ? 'selected' : '' }}>M</option>
-                            <option value="L" {{ request('size') == 'L' ? 'selected' : '' }}>L</option>
-                            <option value="XL" {{ request('size') == 'XL' ? 'selected' : '' }}>XL</option>
-                            <option value="XXL" {{ request('size') == 'XXL' ? 'selected' : '' }}>XXL</option>
-                        </select>
-                    </div>
 
-                    {{-- ✅ Input tersembunyi untuk menjaga nilai sort --}}
+                    {{-- ✅ Input tersembunyi untuk menjaga nilai sort saat filter harga diubah --}}
                     @if(request('sort'))
                         <input type="hidden" name="sort" value="{{ request('sort') }}">
                     @endif
@@ -53,16 +42,13 @@
                 
                 {{-- ✅ Dropdown untuk Opsi Pengurutan --}}
                 <div class="flex justify-end mb-4">
-                    <form id="sortFormKaos" action="{{ route('produk.celana') }}" method="GET">
-                        {{-- Mempertahankan nilai filter saat sort diubah --}}
+                    <form id="sortFormTopi" action="{{ route('produk.sweatpants') }}" method="GET">
+                        {{-- Mempertahankan nilai filter harga saat sort diubah --}}
                         @if(request('min_price'))
                             <input type="hidden" name="min_price" value="{{ request('min_price') }}">
                         @endif
                         @if(request('max_price'))
                             <input type="hidden" name="max_price" value="{{ request('max_price') }}">
-                        @endif
-                        @if(request('size'))
-                            <input type="hidden" name="size" value="{{ request('size') }}">
                         @endif
                         <label for="sort" class="font-medium mr-2">Urutkan:</label>
                         <select name="sort" id="sort" class="border p-2 rounded">
@@ -80,13 +66,14 @@
                     @forelse($products as $product)
                         @include('components.product-card', ['product' => $product])
                     @empty
-                        <p class="col-span-full text-center text-gray-500">Tidak ada produk celana yang ditemukan.</p>
+                        <p class="col-span-full text-center text-gray-500">Tidak ada produk sweat pants yang ditemukan.</p>
                     @endforelse
                 </div>
 
                 {{-- ✅ Pagination --}}
                 <div class="mt-6">{{ $products->withQueryString()->links() }}</div>
             </main>
+
         </div>
     </div>
 </div>
@@ -94,27 +81,20 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const filterForm = document.getElementById('filterFormKaos');
-        const sortForm = document.getElementById('sortFormKaos');
-        const filterInputs = document.querySelectorAll('#filterFormKaos .filter-input');
+        const filterForm = document.getElementById('filterFormTopi');
+        const sortForm = document.getElementById('sortFormTopi');
+        const filterInputs = document.querySelectorAll('#filterFormTopi .filter-input');
         const sortSelect = document.getElementById('sort');
-    
-        // Submit form filter harga dan ukuran setelah user selesai mengetik atau mengubah pilihan
+
+        // Submit form filter harga setelah user selesai mengetik (debounce)
         filterInputs.forEach(input => {
             let typingTimer;
-            input.addEventListener('change', () => {
+            input.addEventListener('keyup', () => {
                 clearTimeout(typingTimer);
-                filterForm.submit();
+                typingTimer = setTimeout(() => filterForm.submit(), 800); // submit setelah 0.8s
             });
-
-            if (input.type === 'number') {
-                input.addEventListener('keyup', () => {
-                    clearTimeout(typingTimer);
-                    typingTimer = setTimeout(() => filterForm.submit(), 800);
-                });
-            }
         });
-    
+
         // Submit form sort saat opsi diubah
         sortSelect.addEventListener('change', () => {
             sortForm.submit();

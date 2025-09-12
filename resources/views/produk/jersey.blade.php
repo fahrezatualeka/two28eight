@@ -4,7 +4,7 @@
 <div class="bg-white min-h-screen px-6 py-10">
     <div class="container mx-auto pt-32 pb-10 bg-white">
 
-        <h2 class="text-3xl font-bold mb-8">two28eight - Kemeja</h2>
+        <h2 class="text-3xl font-bold mb-8">Twoeight - Jersey</h2>
 
         {{-- ✅ Grid 2 kolom: Filter (kiri) dan Produk (kanan) --}}
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -14,9 +14,9 @@
                 <h3 class="text-lg font-semibold mb-4">Filter Produk</h3>
 
                 {{-- 🔥 Form Filter --}}
-                <form id="filterFormKaos" action="{{ route('produk.kemeja') }}" method="GET">
-                    {{-- Input tersembunyi untuk kategori kemeja --}}
-                    <input type="hidden" name="category" value="kemeja">
+                <form id="filterFormKaos" action="{{ route('produk.jersey') }}" method="GET">
+                    {{-- Input tersembunyi untuk kategori jersey --}}
+                    <input type="hidden" name="category" value="jersey">
 
                     {{-- 🔥 Filter Harga --}}
                     <div class="mb-4">
@@ -53,7 +53,7 @@
                 
                 {{-- ✅ Dropdown untuk Opsi Pengurutan --}}
                 <div class="flex justify-end mb-4">
-                    <form id="sortFormKaos" action="{{ route('produk.kemeja') }}" method="GET">
+                    <form id="sortFormKaos" action="{{ route('produk.jersey') }}" method="GET">
                         {{-- Mempertahankan nilai filter saat sort diubah --}}
                         @if(request('min_price'))
                             <input type="hidden" name="min_price" value="{{ request('min_price') }}">
@@ -80,7 +80,7 @@
                     @forelse($products as $product)
                         @include('components.product-card', ['product' => $product])
                     @empty
-                        <p class="col-span-full text-center text-gray-500">Tidak ada produk kemeja yang ditemukan.</p>
+                        <p class="col-span-full text-center text-gray-500">Tidak ada produk jersey yang ditemukan.</p>
                     @endforelse
                 </div>
 

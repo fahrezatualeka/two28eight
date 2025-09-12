@@ -1,9 +1,9 @@
-@extends('layouts.app')
+@extends('layouts.guest')
 
 @section('content')
 
-    <div class="bg-white min-h-screen px-6 py-10 text-justify">
-        <div class="container mx-auto pt-32 pb-10 bg-white">
+    <div class="bg-white min-h-screen px-6 py-10 text-left">
+        {{-- <div class="container mx-auto pt-32 pb-10 bg-white"> --}}
             <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
                 {{-- Kiri: Form Pengiriman --}}
                 <div class="space-y-4 col-span-2">
@@ -67,28 +67,30 @@
                         <div>
                             <label class="block font-semibold mb-1">Metode Pengiriman</label>
                             <div id="shippingOptions" class="space-y-3">
-                                <!-- Opsi pengiriman akan muncul di sini -->
-                            </div>
+                                </div>
                             <input type="hidden" name="metode_pengiriman" id="metodePengirimanInput" required>
+
+                            <input type="hidden" name="metode_pengiriman_nama" id="metodePengirimanNamaInput">
                         </div>
 
                         <div class="w-full">
                             <label class="block font-semibold mb-1">Pembayaran</label>
                             <div class="border rounded-lg p-3 bg-white">
                                 <p>Bank BCA</p>
-                                <p>A.n. Fadil Muliatra Trimanda</p>
-                                <p>No. Rekening: 1390167357</p>
+                                <p>Nama Rekening: Baharudin Belakolly</p>
+                                <p>Nomor Rekening: 8320857571</p>
                             </div>
                         </div>
 
-                        <button type="submit" class="bg-black text-white py-3 w-full rounded-lg font-semibold group">
+                        {{-- Perbaikan: Tambahkan ID dan disabled pada tombol --}}
+                        <button type="submit" id="paymentButton" class="bg-black text-white py-3 w-full rounded-lg font-semibold group" disabled>
                             Lanjutkan pembayaran
                         </button>
                     </form>
                 </div>
 
                 {{-- Kanan: Daftar Produk --}}
-                <div class="border rounded-lg p-5 bg-gray-50 shadow-md w-full max-w-md h-full flex flex-col justify-between self-start">
+                <div class="border rounded-lg p-5 bg-gray-50 shadow-md w-full max-w-md h-full flex flex-col text-left self-start">
                     <div class="w-full">
                         <h2 class="text-xl font-bold mb-4">Produk Anda</h2>
                         @foreach($checkoutItems as $item)
@@ -111,13 +113,10 @@
                                     </span>
                                 </div>
                                 <div class="flex-1">
-                                    <div class="flex justify-between items-center">
-                                        <b>2eight - {{ $productName }}</b>
-                                        <p class="font-semibold text-base">
-                                            Rp{{ number_format($productPrice * $productQuantity, 0, ',', '.') }}
-                                        </p>
+                                    <div class="flex justify-between items-left">
+                                        <h3 class="text-lg"><strong>Twoeight - {{ $productName }}</strong></h3>                                        
                                     </div>
-                                    <p class="text-gray-500">Ukuran {{ $productSize }}</p>
+                                    <h3 class="text-gray-500">Ukuran {{ $productSize }}</h3>
                                 </div>
                             </div>
                         @endforeach
@@ -131,12 +130,57 @@
                     </div>
                 </div>
             </div>
-        </div>
+        {{-- </div> --}}
     </div>
  
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // ✅ Gabungkan semua variabel dan fungsi dalam satu blok
+            const paymentButton = document.getElementById('paymentButton');
+            const form = document.querySelector('form');
+            const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+            const shippingOptions = document.getElementById('shippingOptions'); // Cukup definisikan sekali
+            const metodePengirimanInput = document.getElementById('metodePengirimanInput');
+
+            // ✅ Fungsi untuk memeriksa semua input dan mengaktifkan/menonaktifkan tombol
+            function checkFormValidity() {
+                let allFilled = true;
+                inputs.forEach(input => {
+                    // Cek nilai input dan juga pastikan select tidak memiliki value `disabled`
+                    if (input.value === "" || input.value === null) {
+                        allFilled = false;
+                    }
+                });
+            
+                // Cek juga apakah metode pengiriman sudah dipilih
+                const shippingSelected = metodePengirimanInput.value;
+            
+                if (allFilled && shippingSelected) {
+                    paymentButton.disabled = false;
+                    paymentButton.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                    paymentButton.classList.add('bg-black', 'hover:bg-gray-800');
+                } else {
+                    paymentButton.disabled = true;
+                    paymentButton.classList.remove('bg-black', 'hover:bg-gray-800');
+                    paymentButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+                }
+            }
+
+            // ✅ Panggil fungsi saat ada perubahan pada setiap input
+            inputs.forEach(input => {
+                input.addEventListener('change', checkFormValidity);
+                input.addEventListener('input', checkFormValidity);
+            });
+
+            // ✅ Panggil fungsi saat ada pilihan pengiriman yang diklik
+            shippingOptions.addEventListener('click', checkFormValidity);
+            
+            // ✅ Panggil saat halaman dimuat
+            checkFormValidity();
+
+
+            // --- Kode lainnya (kalkulasi dan API) ---
             const subtotal = {{ $subtotal }};
             const subtotalDisplay = document.getElementById('subtotalDisplay');
             const shippingCostDisplay = document.getElementById('shippingCostDisplay');
@@ -146,8 +190,6 @@
             const kecamatanSelect = document.getElementById('kecamatan');
             const shippingCostInput = document.getElementById('shippingCostInput');
             const subdistrictIdInput = document.getElementById('subdistrictIdInput');
-            const shippingOptions = document.getElementById('shippingOptions');
-            const metodePengirimanInput = document.getElementById('metodePengirimanInput');
         
             function formatRupiah(number) {
                 return "Rp" + number.toLocaleString('id-ID');
@@ -173,6 +215,7 @@
         
                 subdistrictIdInput.value = "";
                 updateTotals(0);
+                checkFormValidity(); // Panggil pengecekan form setelah reset
             }
         
             // 🔹 Ambil daftar kota
@@ -254,7 +297,7 @@
             kecamatanSelect.addEventListener('change', async function () {
                 const selectedSubdistrictId = this.value;
                 subdistrictIdInput.value = selectedSubdistrictId;
-                shippingOptions.innerHTML = `<p class="text-gray-500">Mencari layanan...</p>`;
+                shippingOptions.innerHTML = `<p class="text-gray-500">Mohon menunggu... sedang mencari layanan</p>`;
                 updateTotals(0);
         
                 if (!selectedSubdistrictId) return;
@@ -284,9 +327,9 @@
                         if (!service.price) return;
         
                         const option = document.createElement('div');
-                        option.className = "flex items-center justify-between border rounded-lg p-3 cursor-pointer hover:bg-gray-100";
+                        option.className = "flex items-left justify-between border rounded-lg p-3 cursor-pointer hover:bg-gray-100";
                         option.innerHTML = `
-                            <div class="flex items-center gap-3">
+                            <div class="flex items-left gap-3">
                                 <img src="{{ Storage::url('jnt.png') }}" alt="J&T" class="w-12 h-8 object-contain">
                                 <div>
                                     <p class="font-semibold">${service.name}</p>
@@ -302,7 +345,10 @@
                             });
                             option.classList.add('border-black', 'bg-gray-50');
                             metodePengirimanInput.value = service.key;
+                            // ✅ Tambahkan baris ini untuk menyimpan nama lengkap
+                            document.getElementById('metodePengirimanNamaInput').value = service.name;
                             updateTotals(service.price);
+                            checkFormValidity();
                         });
         
                         shippingOptions.appendChild(option);
@@ -321,6 +367,5 @@
             // awal load reset dulu
             resetAll();
         });
-        </script>
-
+    </script>
 @endsection

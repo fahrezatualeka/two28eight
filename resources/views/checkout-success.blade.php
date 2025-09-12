@@ -1,11 +1,8 @@
-blade success
-{{-- File: resources/views/checkout-success.blade.php --}}
-
-@extends('layouts.app')
+@extends('layouts.guest')
 
 @section('content')
-<div class="bg-white min-h-screen px-6 py-10 text-justify">
-    <div class="container mx-auto pt-32 pb-10 bg-white">
+<div class="bg-white min-h-screen px-6 py-10 text-left">
+    {{-- <div class="container mx-auto pt-32 pb-10 bg-white"> --}}
         <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
             
             {{-- KIRI: Produk Dipesan --}}
@@ -33,13 +30,13 @@ blade success
                                 </span>
                             </div>
                             <div class="flex-1">
-                                <div class="flex justify-between items-center">
-                                    <b>2eight - {{ $item['name'] }}</b>
-                                    <p class="font-semibold text-base">
+                                <div class="flex text-left items-left">
+                                    <h3 class="text-lg"><strong>Twoeight - {{ $item['name'] }}</strong></h3>
+                                    {{-- <p class="font-semibold text-base">
                                         Rp{{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}
-                                    </p>
+                                    </p> --}}
                                 </div>
-                                <p class="text-gray-500">Ukuran {{ $item['size'] }}</p>
+                                <h3 class="text-gray-500">Ukuran {{ $item['size'] }}</h3>
                             </div>
                         </div>
                     @endforeach
@@ -70,15 +67,18 @@ blade success
                     <p>Telp: {{ $telepon }}</p>
                     <p>Metode Pengiriman: {{ $metode_pengiriman }}</p>
                     {{-- ✅ Tampilkan ongkos kirim di sini juga --}}
+                    <p>Subtotal: Rp{{ number_format($subtotal, 0, ',', '.') }}</p>
                     <p>Ongkos Kirim: Rp{{ number_format($shipping_cost, 0, ',', '.') }}</p>
+                    <p>Total: Rp{{ number_format($grandTotal, 0, ',', '.') }}</p>
                 </div>
 
                 {{-- Konfirmasi Pembayaran --}}
                 <div class="border rounded-lg p-5 bg-gray-50 shadow">
                     <h3 class="font-semibold text-lg mb-3">Konfirmasi Pembayaran</h3>
                     <p>Silakan transfer ke rekening berikut:</p>
-                    <p class="mt-2"><strong>Bank BCA</strong> a.n Fadil Muliatra Trimanda</p>
-                    <p>No Rekening: <strong>1390167357</strong></p>
+                    <p class="mt-2"><strong>Bank BCA</strong></p>
+                    <p>Nama Rekening: <strong>Baharudin Belakolly</strong></p>
+                    <p>Nomor Rekening: <strong>8320857571</strong></p>
                     <p>Total Pembayaran: <strong>Rp{{ number_format($grandTotal, 0, ',', '.') }}</strong></p>
                     <p class="text-red-500 mt-2">⚠️ Harap melakukan pembayaran dalam 24 jam dan upload bukti pembayaran di bawah ini.</p>
                     
@@ -89,30 +89,32 @@ blade success
                         
                         <div id="previewContainer" class="relative inline-block hidden">
                             <img id="previewBukti" class="mt-3 w-64 rounded-lg shadow">
-                            <button type="button" id="removeImage" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-700" title="Hapus gambar">
+                            <button type="button" id="removeImage" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-left justify-left text-xs hover:bg-red-700" title="Hapus gambar">
                                 ✕
                             </button>
                         </div>
                         
-                        <p class="text-justify">
-                            setelah melakukan pembayaran harap upload bukti pembayaran dan tekan tombol "Kirim (Langsung Pesan)" sistem kami akan verifikasi bukti pembayaran anda secepatnya, dan selalu cek status pesanan anda di menu "lacak pesanan" di bagian tampilan atas pada website.<br>anda juga dapat melakukan pembayaran nanti sebelum 24 jam dan upload bukti pembayaran kemudian di menu "lacak pesanan" dengan menggunakan nomor pesanan {{ $order_number }}
+                        <p class="text-left">
+                            setelah melakukan pembayaran harap upload bukti pembayaran dan tekan tombol "Kirim" sistem kami akan verifikasi bukti pembayaran anda secepatnya, dan selalu cek status pesanan anda di menu "lacak pesanan" di bagian tampilan atas pada website.
+                            {{-- <br>anda juga dapat melakukan pembayaran nanti sebelum 24 jam dan upload bukti pembayaran kemudian di menu "lacak pesanan" dengan menggunakan nomor pesanan {{ $order_number }} --}}
                         </p>
                         
                         <input type="hidden" name="order_id" value="{{ $order_id }}">
                         
                         <div class="flex gap-3">
                             <button type="submit" id="btnKirim" disabled class="bg-gray-400 text-white px-6 py-3 rounded-lg font-semibold flex-1 cursor-not-allowed" onclick="return confirm('Apakah anda yakin gambar yang anda kirim adalah bukti pembayaran?')">
-                                Kirim (Langsung Pesan)
+                                {{-- Kirim (Langsung Pesan) --}}
+                                Kirim
                             </button>
-                            <a href="/" class="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 flex-1 text-center">
+                            {{-- <a href="/" class="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 flex-1 text-left">
                                 Kembali (Bayar Nanti)
-                            </a>
+                            </a> --}}
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
+    {{-- </div> --}}
 </div>
 
 <script>

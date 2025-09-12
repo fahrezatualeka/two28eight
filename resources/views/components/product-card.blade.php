@@ -20,9 +20,9 @@
             @endif
         </div>
         <div class="p-4 text-left">
-            <b>2eight - {{ $product->name }}</b>
-            <p class="text-gray-500">{{ $product->category }}</p>
-            <h4>Rp{{ number_format($product->price, 0, ',', '.') }}</h4>
+            <h3 class="text-lg"><strong>Twoeight - {{ $product->name }}</strong></h3>
+            <p class="text-gray-700">{{ $product->category }}</p>
+            <h1><strong>Rp{{ number_format($product->price, 0, ',', '.') }}</strong></h1>
         </div>
     </a>
 </div>

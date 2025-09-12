@@ -141,17 +141,16 @@ class CheckoutController extends Controller
     
     private function sendWhatsAppNotification($order)
     {
-        $fonnteToken = 'NehkJetr9zN3JaXXXqJb';
-        $adminPhoneNumber = '082248302960';
+        $fonnteToken = '26vLCjPj3qScEeZzjzHw';
+        $adminPhoneNumber = '082225048894';
         $formattedAdminNumber = preg_replace('/^0/', '62', $adminPhoneNumber);
         $grandTotal = $order->total_price;
-        $message = "Halo Admin! \n\n" .
-            "Pesanan baru telah masuk! \n" .
-            "Berikut detail pesanan: \n" .
-            "Nomor Pesanan: " . $order->order_number . "\n" .
-            "Nama Pelanggan: " . $order->nama . "\n" .
-            "Total Pembayaran: Rp" . number_format($grandTotal, 0, ',', '.') . "\n\n" .
-            "Silakan cek bukti pembayaran yang dikirim dan lakukan verifikasi secepatnya.";
+        $message = "Halo Admin Twoeight 👋 \n\n" .
+                   "Pesanan baru telah masuk! \n" .
+                   "Nomor Pesanan: " . $order->order_number . "\n" .
+                   "Nama Pembeli: " . $order->nama . "\n" .
+                   "Total Pembayaran: Rp" . number_format($grandTotal, 0, ',', '.') . "\n\n" .
+                   "Silakan cek detail pembelian produk dan bukti pembayaran yang dikirim pembeli dan lakukan verifikasi secepatnya melalui sistem admin dengan mengakses https://two28eight.com/admin/";
 
         try {
             Http::withHeaders([
@@ -172,18 +171,26 @@ class CheckoutController extends Controller
             'bukti_pembayaran' => 'required|image|mimes:jpg,jpeg,png|max:2048',
             'order_id' => 'required|exists:orders,id',
         ]);
+        
         $file = $request->file('bukti_pembayaran');
         $filename = uniqid('bukti_') . '.' . $file->getClientOriginalExtension();
         $file->storeAs('bukti_pembayaran', $filename);
+        
         $order = Order::find($request->order_id);
         if (!$order) {
             return back()->with('error', 'Pesanan tidak ditemukan.');
         }
+        
         $order->bukti_pembayaran = $filename;
         $order->status = 'Menunggu Verifikasi';
         $order->save();
+        
         $this->sendWhatsAppNotification($order);
-        return redirect()->route('home')->with('success', 'Bukti pembayaran berhasil dikirim kan. Status anda saat ini Menunggu verifikasi oleh admin. Selalu pantau status pengiriman anda di menu (Status Pesanan) menggunakan nomor pesanan anda');
+        
+        // ✅ KOREKSI: Gunakan tanda kutip ganda agar variabel terproses
+        $message = "Bukti pembayaran berhasil dikirim kan... status anda saat ini sedang menunggu verifikasi oleh admin. Dimohon untuk segera salin dan simpan nomor pesanan anda agar dapat selalu mengecek status pesanan anda pada menu (Status Pesanan) pada bagian atas website menggunakan nomor pesanan anda, yaitu $order->order_number";
+        
+        return redirect()->route('home')->with('success', $message);
     }
 
     public function getProvinces()
@@ -290,13 +297,14 @@ class CheckoutController extends Controller
         return view('checkout', compact('checkoutItems', 'subtotal', 'provinces'));
     }
 
+
+
     public function process(Request $request)
     {
         DB::beginTransaction();
         try {
             $provinsi_name = $this->getProvinceNameById($request->provinsi);
             $kota_name = $this->getCityNameById($request->provinsi, $request->kota);
-            // Tambahkan baris ini
             $kecamatan_name = $this->getSubdistrictNameById($request->kota, $request->kecamatan);
     
             $shipping_cost = (int) $request->input('shipping_cost', 0);
@@ -306,12 +314,13 @@ class CheckoutController extends Controller
                 'order_number' => '28-' . strtoupper(uniqid()),
                 'nama' => $request->nama,
                 'alamat' => $request->alamat,
-                'kecamatan' => $kecamatan_name, // Ditambahkan
+                'kecamatan' => $kecamatan_name,
                 'kota' => $kota_name,
                 'provinsi' => $provinsi_name,
                 'kode_pos' => $request->kode_pos,
                 'telepon' => $request->telepon,
-                'metode_pengiriman' => $request->metode_pengiriman,
+                // ✅ Perbaikan: Gunakan metode_pengiriman_nama yang dikirim dari form
+                'metode_pengiriman' => $request->metode_pengiriman_nama, 
                 'shipping_cost' => $shipping_cost,
                 'status' => 'Menunggu Pembayaran',
                 'total_price' => 0,
@@ -363,6 +372,7 @@ class CheckoutController extends Controller
             DB::commit();
             $order->refresh();
 
+            // ✅ Perbaikan: Kirimkan metode_pengiriman_nama ke view
             return view('checkout-success', [
                 'order_id' => $order->id,
                 'order_number' => $order->order_number,
@@ -373,7 +383,7 @@ class CheckoutController extends Controller
                 'provinsi' => $order->provinsi,
                 'kode_pos' => $order->kode_pos,
                 'telepon' => $order->telepon,
-                'metode_pengiriman' => $order->metode_pengiriman,
+                'metode_pengiriman' => $request->metode_pengiriman_nama, // ✅ Perbaikan
                 'shipping_cost' => $shipping_cost,
                 'products' => $order->items,
                 'subtotal' => $subtotal_price,
@@ -385,4 +395,7 @@ class CheckoutController extends Controller
             return back()->with('error', 'Terjadi kesalahan saat memproses pesanan. Silakan coba lagi.');
         }
     }
+
+
+    
 }

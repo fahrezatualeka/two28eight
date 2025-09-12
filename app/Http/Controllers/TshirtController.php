@@ -5,18 +5,16 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 
-class JaketController extends Controller
+class TshirtController extends Controller
 {
     public function index(Request $request)
     {
-        // Mulai query dengan memfilter langsung berdasarkan kolom 'category' dengan nilai 'jaket'
-        $query = Product::where('category', 'jaket');
+        // Mulai query dengan memfilter langsung berdasarkan kolom 'category' dengan nilai 'tshirt'
+        $query = Product::where('category', 'tshirt');
 
-        // Ambil nilai filter dari request
+        // Ambil nilai filter harga dari request
         $minPrice = $request->input('min_price');
         $maxPrice = $request->input('max_price');
-        $size = $request->input('size');
-        $sort = $request->input('sort', 'latest'); // Default: terbaru
 
         // Terapkan filter harga jika ada nilainya
         if ($minPrice) {
@@ -27,13 +25,9 @@ class JaketController extends Controller
             $query->where('price', '<=', $maxPrice);
         }
 
-        // ✅ PERBAIKAN: Terapkan filter ukuran jika ada nilainya
-        if ($size) {
-            // Kita harus mencari nilai 'size' di dalam setiap objek dari array JSON
-            $query->whereJsonContains('sizes->[*]->size', $size);
-        }
-        
-        // ✅ Logika untuk mengurutkan produk
+        // ✅ Logika baru untuk mengurutkan produk
+        $sort = $request->input('sort', 'latest'); // Default: terbaru
+
         switch ($sort) {
             case 'price_asc':
                 $query->orderBy('price', 'asc');
@@ -51,7 +45,7 @@ class JaketController extends Controller
         $products = $query->paginate(12);
 
         // Kirim produk ke view
-        return view('produk.jaket', [
+        return view('produk.tshirt', [
             'products' => $products,
         ]);
     }

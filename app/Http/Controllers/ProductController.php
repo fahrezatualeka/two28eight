@@ -92,7 +92,7 @@ class ProductController extends Controller
 
         $products = $query->paginate(20);
     
-        $categories = collect(['topi','kaos','kemeja','jaket','hoodie','tas','celana','aksesoris'])
+        $categories = collect(['tshirt','poloshirt','jersey','zipperhoodie','jortspants','sweatpants','trucker','accessories'])
                         ->map(fn($c) => (object)['id' => $c, 'name' => ucfirst($c)]);
     
         return view('all-product', compact('products', 'categories'));

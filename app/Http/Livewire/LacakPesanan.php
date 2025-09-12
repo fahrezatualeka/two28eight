@@ -5,7 +5,6 @@ namespace App\Http\Livewire;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Order;
-use Illuminate\Support\Facades\Http; // Import Fonnte API
 
 class LacakPesanan extends Component
 {
@@ -15,7 +14,6 @@ class LacakPesanan extends Component
     public $orderNumber;
     public $order;
     public $orderId;
-    public $rejectionMessage = '';
 
     public function updatedOrderNumber()
     {
@@ -31,25 +29,12 @@ class LacakPesanan extends Component
     {
         if (!$this->orderNumber) {
             $this->order = null;
-            $this->rejectionMessage = '';
             return;
         }
-
-        $order = Order::where('order_number', $this->orderNumber)
+        
+        $this->order = Order::where('order_number', $this->orderNumber)
                     ->with('items')
                     ->first();
-        
-        if (session()->has('order_rejected')) {
-            $this->rejectionMessage = session('order_rejected');
-            session()->forget('order_rejected');
-        } else {
-            $this->rejectionMessage = '';
-        }
-
-        if (!$this->order || optional($this->order)->updated_at != optional($order)->updated_at) {
-            $this->order = $order;
-            $this->orderId = $order?->id;
-        }
     }
 
     // 🔥🔥 Fungsi baru untuk mengirim notifikasi WhatsApp 🔥🔥
@@ -115,10 +100,6 @@ class LacakPesanan extends Component
 
     public function render()
     {
-        if ($this->orderNumber) {
-            $this->fetchOrder();
-        }
-
         return view('livewire.lacak-pesanan')
             ->layout('layouts.app');
     }

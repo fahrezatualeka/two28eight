@@ -1,3 +1,5 @@
+{{-- File: resources/views/product-detail.blade.php --}}
+
 @extends('layouts.app')
 
 @section('content')
@@ -14,24 +16,30 @@
 
         <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
 
-            {{-- ✅ Kolom 1: Gambar Produk --}}
-            <div class="flex">
+            <div class="flex flex-col-reverse md:flex-row items-center md:items-start gap-4">
                 @php
                     $images = is_array($product->image) ? $product->image : json_decode($product->image, true);
                 @endphp
-
+            
                 @if($images && count($images) > 1)
-                    <div class="flex flex-col gap-2 mr-3">
+                    <div class="hidden md:flex flex-col gap-2">
                         @foreach($images as $img)
                             <img src="{{ Storage::url($img) }}" 
                                  onclick="document.getElementById('mainImage').src=this.src" 
-                                 class="min-w-[75px] max-w-[75px] object-cover border rounded cursor-pointer hover:opacity-75 transition" 
-                                 style="aspect-ratio:1/1;">
+                                 class="w-20 object-cover border rounded cursor-pointer hover:opacity-75 transition aspect-square">
+                        @endforeach
+                    </div>
+                    
+                    <div class="flex md:hidden flex-wrap justify-center gap-2">
+                        @foreach($images as $img)
+                            <img src="{{ Storage::url($img) }}" 
+                                 onclick="document.getElementById('mainImage').src=this.src" 
+                                 class="w-1/5 object-cover border rounded cursor-pointer hover:opacity-75 transition aspect-square">
                         @endforeach
                     </div>
                 @endif
-
-                <div class="relative aspect-w-1 aspect-h-1 w-full max-w-[500px] mx-auto border rounded-lg overflow-hidden">
+            
+                <div class="w-full relative mx-auto border rounded-lg overflow-hidden aspect-square">
                     <img id="mainImage"
                          src="{{ $images ? Storage::url($images[0]) : asset('no-image.png') }}"
                          alt="{{ $product->name }}"
@@ -39,7 +47,6 @@
                 </div>
             </div>
 
-            {{-- ✅ Kolom 2: Detail Produk --}}
             <div class="space-y-4">
                 <h1 class="text-2xl font-bold">{{ $product->name }}</h1>
                 <div class="border-t pt-3 text-gray-700">
@@ -47,14 +54,11 @@
                 </div>
             </div>
 
-            {{-- ✅ Kolom 3: Kotak Checkout --}}
             <div class="border rounded-lg p-5 bg-gray-50 shadow-md w-full max-w-md self-start">
                 <p class="text-3xl font-bold mb-3">Rp{{ number_format($product->price, 0, ',', '.') }}</p>
 
-                {{-- ✅ Stok Dinamis Berdasarkan Ukuran atau Stok Tunggal --}}
                 <p class="mb-4">Stok: <span id="currentStock">{{ $initialStock }}</span></p>
 
-                {{-- ✅ Pilihan Ukuran Dinamis (hanya muncul jika ada data ukuran) --}}
                 @if($hasSizes)
                     <label class="block text-gray-700 font-semibold mb-2">Pilih Ukuran</label>
                     <div id="sizeOptions" class="flex flex-wrap gap-3 mb-4">
@@ -75,7 +79,6 @@
 
                 <input type="hidden" name="size" id="selectedSize" value="{{ $hasSizes ? ($sizesData[0]['size'] ?? 'S') : 'default' }}">
 
-                {{-- ✅ Jumlah --}}
                 <label class="block text-gray-700 font-semibold mb-2">Jumlah</label>
                 <div class="flex items-center mb-4 w-full border rounded-lg overflow-hidden">
                     <button type="button" id="btnMinus" class="bg-gray-100 w-1/3 py-3 text-xl font-bold">−</button>
@@ -84,7 +87,6 @@
                     <button type="button" id="btnPlus" class="bg-gray-100 w-1/3 py-3 text-xl font-bold">+</button>
                 </div>
 
-                {{-- ✅ Tombol Aksi --}}
                 <div class="space-y-3">
                     <form id="addToCartForm" action="{{ route('cart.add', $product->id) }}" method="POST">
                         @csrf
@@ -119,7 +121,7 @@
                     $hasSecondImage = $relatedImages && count($relatedImages) > 1;
                 @endphp
         
-                <div class="bg-white rounded-lg overflow-hidden transition {{ $hasSecondImage ? 'group' : '' }}">
+                <div class="bg-white hover:border rounded-lg overflow-hidden transition {{ $hasSecondImage ? 'group' : '' }}">
                     <a href="{{ route('product.show', $related->id) }}">
                         <div class="relative w-full" style="aspect-ratio:1/1; overflow:hidden;">
                             @if($relatedImages && count($relatedImages) > 0)
@@ -135,10 +137,10 @@
                             @endif
                         </div>
         
-                        <div class="p-4 text-justify">
-                            <b>2eight - {{ $related->name }}</b>
-                            <p class="text-gray-500">{{ $related->category }}</p>
-                            <h4>{{ number_format($related->price, 0, ',', '.') }}</h4>
+                        <div class="p-4 text-left">
+                            <h3 class="text-lg"><strong>Twoeight - {{ $related->name }}</strong></h3>
+                            <p class="text-gray-700">{{ $related->category }}</p>
+                            <h1><strong>Rp{{ number_format($related->price, 0, ',', '.') }}</strong></h1>
                         </div>
                     </a>
                 </div>
@@ -159,20 +161,47 @@
         const formSelectedSize = document.getElementById('formSelectedSize');
         const buySize = document.getElementById('buySize');
         const currentStockEl = document.getElementById('currentStock');
-        const addToCartForm = document.getElementById('addToCartForm');
-        const buyNowForm = document.getElementById('buyNowForm');
         
-        let maxStockValue = parseInt(currentStockEl.innerText);
+        const addToCartBtn = document.getElementById('addToCartBtn');
+        const buyNowBtn = document.getElementById('buyNowBtn');
 
-        // Fungsi untuk memeriksa stok dan status tombol
-        function checkButtons(qty) {
-            btnMinus.disabled = qty <= 1;
-            btnPlus.disabled = qty >= maxStockValue;
+        let maxStockValue;
 
-            btnMinus.classList.toggle('opacity-50', btnMinus.disabled);
-            btnMinus.classList.toggle('cursor-not-allowed', btnMinus.disabled);
-            btnPlus.classList.toggle('opacity-50', btnPlus.disabled);
-            btnPlus.classList.toggle('cursor-not-allowed', btnPlus.disabled);
+        // Fungsi untuk mengelola status stok dan tombol
+        function checkStockAndButtons() {
+            const currentStock = parseInt(currentStockEl.innerText);
+            
+            if (currentStock <= 0) {
+                // Nonaktifkan tombol dan ubah gaya
+                addToCartBtn.disabled = true;
+                buyNowBtn.disabled = true;
+                btnPlus.disabled = true;
+                btnMinus.disabled = true;
+
+                addToCartBtn.classList.add('bg-gray-400', 'text-white', 'cursor-not-allowed');
+                addToCartBtn.classList.remove('bg-transparent', 'text-black', 'border');
+
+                buyNowBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                buyNowBtn.classList.remove('bg-black', 'hover:bg-gray-800');
+
+                btnPlus.classList.add('opacity-50', 'cursor-not-allowed');
+                btnMinus.classList.add('opacity-50', 'cursor-not-allowed');
+
+                qtyInput.value = 0;
+            } else {
+                // Aktifkan kembali tombol dan atur gaya default
+                addToCartBtn.disabled = false;
+                buyNowBtn.disabled = false;
+
+                addToCartBtn.classList.remove('bg-gray-400', 'text-white', 'cursor-not-allowed');
+                addToCartBtn.classList.add('bg-transparent', 'text-black', 'border');
+
+                buyNowBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                buyNowBtn.classList.add('bg-black', 'hover:bg-gray-800');
+                
+                // Pastikan tombol plus/minus juga diperbarui
+                updateQty(0);
+            }
         }
 
         // Fungsi untuk memperbarui jumlah produk
@@ -185,7 +214,13 @@
             formSelectedQty.value = qty;
             buyQty.value = qty;
 
-            checkButtons(qty);
+            btnMinus.disabled = qty <= 1;
+            btnPlus.disabled = qty >= maxStockValue;
+            
+            btnMinus.classList.toggle('opacity-50', btnMinus.disabled);
+            btnMinus.classList.toggle('cursor-not-allowed', btnMinus.disabled);
+            btnPlus.classList.toggle('opacity-50', btnPlus.disabled);
+            btnPlus.classList.toggle('cursor-not-allowed', btnPlus.disabled);
         }
 
         btnMinus.addEventListener('click', () => updateQty(-1));
@@ -202,15 +237,19 @@
                 qtyInput.value = 1;
                 formSelectedQty.value = 1;
                 buyQty.value = 1;
-                checkButtons(1);
+                
+                checkStockAndButtons(); // Panggil fungsi utama
+                updateQty(0); // Update tombol plus/minus
 
                 formSelectedSize.value = this.value;
                 buySize.value = this.value;
 
                 document.querySelectorAll('.size-box').forEach(box => {
                     box.classList.remove('bg-black', 'text-white');
-                    box.classList.add('text-black', 'border');
+                    box.classList.add('text-black');
                 });
+
+                // ✅ Perbaikan: Selalu berikan latar belakang hitam saat dipilih
                 this.nextElementSibling.classList.add('bg-black', 'text-white');
                 this.nextElementSibling.classList.remove('text-black');
             });
@@ -283,6 +322,13 @@
             buyQty.value  = qtyInput.value;
         });
 
-        checkButtons(parseInt(qtyInput.value));
+        // Set initial stock and check buttons on page load
+        if (document.querySelectorAll('.size-radio').length > 0) {
+            maxStockValue = parseInt(document.querySelector('.size-radio:checked').dataset.stock);
+        } else {
+            maxStockValue = parseInt(currentStockEl.innerText);
+        }
+
+        checkStockAndButtons();
     });
 </script>

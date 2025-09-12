@@ -9,6 +9,22 @@
             <p class="text-gray-600 text-justify py-10">Keranjang Anda kosong.</p>
         @else
 
+        {{-- ✅ Kontainer untuk "Pilih Semua" dan "Hapus" di tampilan mobile --}}
+        <div class="flex items-center justify-between mb-4 md:hidden">
+            <div class="flex items-center gap-2">
+                <input type="checkbox" id="selectAllCheckbox" class="w-5 h-5 cursor-pointer">
+                <label for="selectAllCheckbox" class="text-black">Pilih Semua (<span id="productCount"></span>)</label>
+            </div>
+            
+            <form id="bulkDeleteForm" action="{{ route('cart.bulkDelete') }}" method="POST" class="hidden">
+                @csrf
+                <input type="hidden" name="selected" id="selectedForDelete">
+                <button id="deleteBtn" type="submit" 
+                    class="text-black hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-trash mr-1"></i>
+                </button>
+            </form>
+        </div>
         
         <style>
             /* Custom CSS untuk membuat tabel responsif di mobile */
@@ -73,16 +89,14 @@
                 <thead>
                     <tr class="bg-gray-200">
                         <th class="p-2 border text-center w-41">
-                            {{-- ✅ Tombol Pilih Semua dan Hapus --}}
-                            <div class="flex items-center justify-center gap-2">
-                                <input type="checkbox" id="selectAllCheckbox" class="w-5 h-5 cursor-pointer">
-                                <label for="selectAllCheckbox" class="text-black hidden md:inline">Pilih Semua (<span id="productCount"></span>)</label>
-
-                                {{-- ✅ Form Hapus Semua (Awalnya tersembunyi) --}}
-                                <form id="bulkDeleteForm" action="{{ route('cart.bulkDelete') }}" method="POST" class="ml-4 hidden">
+                            {{-- ✅ Tombol Pilih Semua dan Hapus di tampilan desktop --}}
+                            <div class="flex items-center justify-center gap-2 hidden md:flex">
+                                <input type="checkbox" id="selectAllCheckboxDesktop" class="w-5 h-5 cursor-pointer">
+                                <label for="selectAllCheckboxDesktop" class="text-black">Pilih Semua (<span id="productCountDesktop"></span>)</label>
+                                <form id="bulkDeleteFormDesktop" action="{{ route('cart.bulkDelete') }}" method="POST" class="ml-4 hidden">
                                     @csrf
-                                    <input type="hidden" name="selected" id="selectedForDelete">
-                                    <button id="deleteBtn" type="submit" 
+                                    <input type="hidden" name="selected" id="selectedForDeleteDesktop">
+                                    <button id="deleteBtnDesktop" type="submit" 
                                         class="text-black hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                         <i class="fa-solid fa-trash mr-1"></i>
                                     </button>
@@ -136,9 +150,9 @@
                             
                                 <div>
                                     <a href="{{ route('product.show', $productId) }}" class="block">
-                                        <b class="text-black">{{ $item['name'] }}</b>
+                                        <h3><strong>Twoeight - {{ $item['name'] }}</strong></h3>
                                     </a>
-                                    <p class="text-black">Ukuran {{ $item['size'] }}</p>
+                                    <p class="text-gray-700">Ukuran {{ $item['size'] }}</p>
                                 </div>
                             </div>
                         </td>
@@ -209,14 +223,19 @@
         const checkoutBtn = document.getElementById('checkoutBtn');
         const subtotalEl = document.getElementById('subtotal');
         const checkoutInput = document.getElementById('selectedProductsInput');
-        const selectedForDelete = document.getElementById('selectedForDelete');
-        const bulkDeleteForm = document.getElementById('bulkDeleteForm');
-        const deleteBtn = document.getElementById('deleteBtn');
-        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-        const productCountEl = document.getElementById('productCount');
-        const deleteCountEl = document.querySelector('.delete-count');
+
+        // References for both mobile and desktop controls
+        const selectAllCheckboxMobile = document.getElementById('selectAllCheckbox');
+        const selectAllCheckboxDesktop = document.getElementById('selectAllCheckboxDesktop');
+        const productCountElMobile = document.getElementById('productCount');
+        const productCountElDesktop = document.getElementById('productCountDesktop');
+        const bulkDeleteFormMobile = document.getElementById('bulkDeleteForm');
+        const bulkDeleteFormDesktop = document.getElementById('bulkDeleteFormDesktop');
+        const selectedForDeleteMobile = document.getElementById('selectedForDelete');
+        const selectedForDeleteDesktop = document.getElementById('selectedForDeleteDesktop');
     
-        productCountEl.textContent = productCheckboxes.length;
+        productCountElMobile.textContent = productCheckboxes.length;
+        productCountElDesktop.textContent = productCheckboxes.length;
 
         function updateSubtotal() {
             let subtotal = 0;
@@ -232,27 +251,38 @@
     
             subtotalEl.innerText = "Rp" + subtotal.toLocaleString('id-ID');
             checkoutInput.value = selectedIndexes.join(',');
-            selectedForDelete.value = selectedIndexes.join(',');
+            
+            selectedForDeleteMobile.value = selectedIndexes.join(',');
+            selectedForDeleteDesktop.value = selectedIndexes.join(',');
             
             checkoutBtn.disabled = (checkedCount === 0);
             checkoutBtn.textContent = checkedCount > 0 ? `Checkout (${checkedCount})` : "Checkout";
     
-            // Update the bulk delete button visibility and state
-            if (checkedCount > 0) {
-                bulkDeleteForm.classList.remove('hidden');
-                deleteBtn.disabled = false;
-            } else {
-                bulkDeleteForm.classList.add('hidden');
-                deleteBtn.disabled = true;
-            }
-            // Fix: remove unused variable `deleteCountEl`
-            // deleteCountEl.textContent = checkedCount;
+            // ✅ Logika baru: Tombol hapus hanya muncul jika "Pilih Semua" dicentang
+            const isAllChecked = productCheckboxes.length > 0 && checkedCount === productCheckboxes.length;
 
-            // Update selectAllCheckbox state
-            selectAllCheckbox.checked = productCheckboxes.length > 0 && checkedCount === productCheckboxes.length;
+            if (isAllChecked) {
+                bulkDeleteFormMobile.classList.remove('hidden');
+                bulkDeleteFormDesktop.classList.remove('hidden');
+            } else {
+                bulkDeleteFormMobile.classList.add('hidden');
+                bulkDeleteFormDesktop.classList.add('hidden');
+            }
+
+            // Update selectAllCheckbox state for both
+            selectAllCheckboxMobile.checked = isAllChecked;
+            selectAllCheckboxDesktop.checked = isAllChecked;
         }
     
-        selectAllCheckbox.addEventListener('change', (e) => {
+        selectAllCheckboxMobile.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            productCheckboxes.forEach(cb => {
+                cb.checked = isChecked;
+            });
+            updateSubtotal();
+        });
+
+        selectAllCheckboxDesktop.addEventListener('change', (e) => {
             const isChecked = e.target.checked;
             productCheckboxes.forEach(cb => {
                 cb.checked = isChecked;
@@ -266,7 +296,12 @@
             });
         });
     
-        bulkDeleteForm.onsubmit = function () {
+        bulkDeleteFormMobile.onsubmit = function () {
+            const selectedCount = document.querySelectorAll('.product-checkbox:checked').length;
+            return confirm(`Hapus ${selectedCount} produk? Produk yang anda pilih akan dihapus dari Keranjang.`);
+        };
+        
+        bulkDeleteFormDesktop.onsubmit = function () {
             const selectedCount = document.querySelectorAll('.product-checkbox:checked').length;
             return confirm(`Hapus ${selectedCount} produk? Produk yang anda pilih akan dihapus dari Keranjang.`);
         };
@@ -301,7 +336,6 @@
                 .then(data => {
                     if (!data.success) {
                         if (data.message) {
-                           // Use console.error instead of alert
                            console.error(data.message);
                         }
                         return;
@@ -321,6 +355,9 @@
                     
                     updateSubtotal();
                     document.dispatchEvent(new CustomEvent('cart-updated', { detail: { totalQty: data.cart_total_qty } }));
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
                 });
             }
 
@@ -342,7 +379,6 @@
 </script>
 
 <script>
-    // ✅ Tambahan skrip untuk memperbarui ikon cart di navbar
     document.addEventListener('cart-updated', function (e) {
         const cartCountEl = document.getElementById('cartCount');
         const totalQty = e.detail.totalQty;

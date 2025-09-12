@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 
-class CelanaController extends Controller
+class ZipperhoodieController extends Controller
 {
     public function index(Request $request)
     {
-        // Mulai query dengan memfilter langsung berdasarkan kolom 'category' dengan nilai 'celana'
-        $query = Product::where('category', 'celana');
+        // Mulai query dengan memfilter langsung berdasarkan kolom 'category' dengan nilai 'zipperhoodie'
+        $query = Product::where('category', 'zipperhoodie');
 
         // Ambil nilai filter dari request
         $minPrice = $request->input('min_price');
@@ -51,7 +51,7 @@ class CelanaController extends Controller
         $products = $query->paginate(12);
 
         // Kirim produk ke view
-        return view('produk.celana', [
+        return view('produk.zipperhoodie', [
             'products' => $products,
         ]);
     }

@@ -4,7 +4,7 @@
 <div class="bg-white min-h-screen px-6 py-10">
     <div class="container mx-auto pt-32 pb-10 bg-white">
 
-        <h2 class="text-3xl font-bold mb-8">two28eight - Jaket</h2>
+        <h2 class="text-3xl font-bold mb-8">Twoeight - Polo Shirt</h2>
 
         {{-- ✅ Grid 2 kolom: Filter (kiri) dan Produk (kanan) --}}
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -14,9 +14,9 @@
                 <h3 class="text-lg font-semibold mb-4">Filter Produk</h3>
 
                 {{-- 🔥 Form Filter --}}
-                <form id="filterFormKaos" action="{{ route('produk.jaket') }}" method="GET">
-                    {{-- Input tersembunyi untuk kategori jaket --}}
-                    <input type="hidden" name="category" value="jaket">
+                <form id="filterFormPoloshirt" action="{{ route('produk.poloshirt') }}" method="GET">
+                    {{-- Input tersembunyi untuk kategori poloshirt --}}
+                    <input type="hidden" name="category" value="poloshirt">
 
                     {{-- 🔥 Filter Harga --}}
                     <div class="mb-4">
@@ -53,7 +53,7 @@
                 
                 {{-- ✅ Dropdown untuk Opsi Pengurutan --}}
                 <div class="flex justify-end mb-4">
-                    <form id="sortFormKaos" action="{{ route('produk.jaket') }}" method="GET">
+                    <form id="sortFormPoloshirt" action="{{ route('produk.poloshirt') }}" method="GET">
                         {{-- Mempertahankan nilai filter saat sort diubah --}}
                         @if(request('min_price'))
                             <input type="hidden" name="min_price" value="{{ request('min_price') }}">
@@ -80,7 +80,7 @@
                     @forelse($products as $product)
                         @include('components.product-card', ['product' => $product])
                     @empty
-                        <p class="col-span-full text-center text-gray-500">Tidak ada produk jaket yang ditemukan.</p>
+                        <p class="col-span-full text-center text-gray-500">Tidak ada produk polo-shirt yang ditemukan.</p>
                     @endforelse
                 </div>
 
@@ -94,9 +94,9 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const filterForm = document.getElementById('filterFormKaos');
-        const sortForm = document.getElementById('sortFormKaos');
-        const filterInputs = document.querySelectorAll('#filterFormKaos .filter-input');
+        const filterForm = document.getElementById('filterFormPoloshirt');
+        const sortForm = document.getElementById('sortFormPoloshirt');
+        const filterInputs = document.querySelectorAll('#filterFormPoloshirt .filter-input');
         const sortSelect = document.getElementById('sort');
     
         // Submit form filter harga dan ukuran setelah user selesai mengetik atau mengubah pilihan

@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 
-class TopiController extends Controller
+class AccessoriesController extends Controller
 {
     public function index(Request $request)
     {
-        // Mulai query dengan memfilter langsung berdasarkan kolom 'category' dengan nilai 'topi'
-        $query = Product::where('category', 'topi');
+        // Mulai query dengan memfilter langsung berdasarkan kolom 'category' dengan nilai 'accessories'
+        $query = Product::where('category', 'accessories');
 
         // Ambil nilai filter harga dari request
         $minPrice = $request->input('min_price');
@@ -45,7 +45,7 @@ class TopiController extends Controller
         $products = $query->paginate(12);
 
         // Kirim produk ke view
-        return view('produk.topi', [
+        return view('produk.accessories', [
             'products' => $products,
         ]);
     }

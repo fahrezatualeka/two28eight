@@ -168,13 +168,13 @@
 
         <!-- Menu Kanan -->
         <div class="flex-grow flex items-center justify-center md:justify-end space-x-4">
-            <a href="https://maps.app.goo.gl/mDBLLtfL84SNcnH58" class="flex items-center hover:text-gray-300 text-white" target="blank">
-                <i class="fa-solid fa-location-dot mr-1"></i>
-                <span class="md:inline">Lokasi Toko</span>
-            </a>
             <a href="{{ route('lacak.index') }}" class="flex items-center hover:text-gray-300 text-white">
                 <i class="fa-solid fa-truck mr-1"></i>
                 <span class="md:inline">Status Pesanan</span>
+            </a>
+            <a href="https://maps.app.goo.gl/mDBLLtfL84SNcnH58" class="flex items-center hover:text-gray-300 text-white" target="blank">
+                <i class="fa-solid fa-location-dot mr-1"></i>
+                <span class="md:inline">Lokasi Toko</span>
             </a>
             <a href="/bantuan" class="flex items-center hover:text-gray-300 text-white">
                 <i class="fa-solid fa-circle-question mr-1"></i>
@@ -196,25 +196,25 @@
 
         <!-- 🔹 Logo -->
         <div class="flex items-center logo">
-            <a href="/" style="text-transform: lowercase;">two28eight</a>
+            <a href="/">Twoeight</a>
         </div>
 
         <!-- 🟢 Menu Tengah (Desktop Only) -->
         <ul class="main-menu hidden md:flex items-center space-x-8">
-            <li><a href="/topi" class="hover:text-gray-500">Topi</a></li>
-            <li><a href="/kaos" class="hover:text-gray-500">Kaos</a></li>
-            <li><a href="/kemeja" class="hover:text-gray-500">Kemeja</a></li>
-            <li><a href="/jaket" class="hover:text-gray-500">Jaket</a></li>
-            <li><a href="/hoodie" class="hover:text-gray-500">Hoodie</a></li>
-            <li><a href="/tas" class="hover:text-gray-500">Tas</a></li>
-            <li><a href="/celana" class="hover:text-gray-500">Celana</a></li>
-            <li><a href="/aksesoris" class="hover:text-gray-500">Aksesoris</a></li>
+            <li><a href="/tshirt" class="hover:text-gray-500">T-shirt</a></li>
+            <li><a href="/poloshirt" class="hover:text-gray-500">Polo-Shirt</a></li>
+            <li><a href="/jersey" class="hover:text-gray-500">Jersey</a></li>
+            <li><a href="/zipperhoodie" class="hover:text-gray-500">Zipper & Hoodie</a></li>
+            <li><a href="/jortspants" class="hover:text-gray-500">Jorts pants</a></li>
+            <li><a href="/sweatpants" class="hover:text-gray-500">Sweat Pants</a></li>
+            <li><a href="/trucker" class="hover:text-gray-500">Trucker</a></li>
+            <li><a href="/accessories" class="hover:text-gray-500">Accessories</a></li>
         </ul>
 
         <!-- 🔍 Pencarian + Profil + Cart -->
         <div class="flex items-center space-x-4 icon-wrapper">
             <!-- Search Input -->
-            <input type="text" id="searchInput" placeholder="Cari produk..."
+            <input type="text" id="searchInput" placeholder="Cari..."
                 class="px-3 py-2 rounded-lg bg-gray-100 border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none"
             >
             <!-- Search Toggle -->
@@ -268,20 +268,20 @@
 <div id="mobileMenu" class="md:hidden fixed top-0 left-0 w-full h-full bg-white z-50 transform -translate-x-full transition-transform duration-300 overflow-y-auto">
     <div class="p-6">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold">Menu</h2>
+            <h2 class="text-2xl font-bold">Produk</h2>
             <button id="mobileMenuClose" class="text-black text-xl">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
         <ul class="space-y-4 text-lg font-semibold">
-            <li><a href="/topi" class="block hover:text-gray-500">Topi</a></li>
-            <li><a href="/kaos" class="block hover:text-gray-500">Kaos</a></li>
-            <li><a href="/kemeja" class="block hover:text-gray-500">Kemeja</a></li>
-            <li><a href="/jaket" class="block hover:text-gray-500">Jaket</a></li>
-            <li><a href="/hoodie" class="block hover:text-gray-500">Hoodie</a></li>
-            <li><a href="/tas" class="block hover:text-gray-500">Tas</a></li>
-            <li><a href="/celana" class="block hover:text-gray-500">Celana</a></li>
-            <li><a href="/aksesories" class="block hover:text-gray-500">Aksesoris</a></li>
+            <li><a href="/tshirt" class="hover:text-gray-500">T-shirt</a></li>
+            <li><a href="/poloshirt" class="hover:text-gray-500">Polo-Shirt</a></li>
+            <li><a href="/jersey" class="hover:text-gray-500">Jersey</a></li>
+            <li><a href="/zipperhoodie" class="hover:text-gray-500">Zipper & Hoodie</a></li>
+            <li><a href="/jortspants" class="hover:text-gray-500">Jorts pants</a></li>
+            <li><a href="/sweatpants" class="hover:text-gray-500">Sweat Pants</a></li>
+            <li><a href="/trucker" class="hover:text-gray-500">Trucker</a></li>
+            <li><a href="/accessories" class="hover:text-gray-500">Accessories</a></li>
         </ul>
     </div>
 </div>
@@ -329,7 +329,7 @@
 
         if (!isSearchOpen) {
             // Tampilkan input pencarian
-            searchInput.style.width = '250px';
+            searchInput.style.width = '100px';
             searchInput.style.opacity = '1';
             searchInput.style.transform = 'scaleX(1)';
             setTimeout(() => {
